@@ -133,10 +133,41 @@ document.addEventListener('DOMContentLoaded', () => {
             chatHistory.push(messageObj);
             safeLocalStorageSetItem('chatHistory', JSON.stringify(chatHistory));
         } else {
-            // Populate from history
+            // Validate chat history before populating
+            const validatedHistory = [];
+            const seenMessages = new Set();
+            
             chatHistory.forEach(message => {
-                addMessageToUI(message);
+                // Check if message has valid properties
+                if (!message.role || !message.content || !message.timestamp) {
+                    return;
+                }
+                
+                // Validate timestamp (should be a valid date string)
+                try {
+                    const date = new Date(message.timestamp);
+                    if (isNaN(date.getTime())) {
+                        // Invalid date, generate a new timestamp
+                        message.timestamp = new Date().toISOString();
+                    }
+                } catch (e) {
+                    message.timestamp = new Date().toISOString();
+                }
+                
+                // Create a unique key for the message to detect duplicates
+                const messageKey = `${message.role}-${message.content}-${message.timestamp}`;
+                
+                // Only add if not a duplicate
+                if (!seenMessages.has(messageKey)) {
+                    seenMessages.add(messageKey);
+                    validatedHistory.push(message);
+                    addMessageToUI(message);
+                }
             });
+            
+            // Replace chatHistory with validated history
+            chatHistory = validatedHistory;
+            safeLocalStorageSetItem('chatHistory', JSON.stringify(chatHistory));
         }
         
         scrollToBottom();
@@ -314,6 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function openSettingsSidebar() {
         settingsSidebar.classList.add('active');
         settingsOverlay.classList.add('active');
+        document.body.classList.remove('sidebar-closed');
         document.body.style.overflow = 'hidden'; // Prevent scrolling
     }
 
@@ -322,15 +354,34 @@ document.addEventListener('DOMContentLoaded', () => {
         settingsSidebar.classList.remove('active');
         settingsOverlay.classList.remove('active');
         document.body.style.overflow = ''; // Restore scrolling
+        
+        // Only add the sidebar-closed class on larger screens
+        if (!isMobile) {
+            document.body.classList.add('sidebar-closed');
+        }
     }
 
     // Check if device is mobile and set initial state
     function checkMobileState() {
         isMobile = window.innerWidth <= 768;
+        
+        // Set initial sidebar state class
+        if (isMobile) {
+            document.body.classList.remove('sidebar-closed');
+        } else {
+            // On desktop, check if sidebar is visible by default
+            const sidebarActive = settingsSidebar && settingsSidebar.classList.contains('active');
+            if (!sidebarActive) {
+                document.body.classList.add('sidebar-closed');
+            } else {
+                document.body.classList.remove('sidebar-closed');
+            }
+        }
     }
 
     // Initialize
     initVisualizer();
+    checkMobileState();
     window.addEventListener('resize', () => {
         initVisualizer();
         checkMobileState();
