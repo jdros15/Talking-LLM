@@ -51,4 +51,6 @@ An aesthetically pleasing web application that provides a voice-based chat inter
 
 - Modern web browser with microphone access
 - API keys for Gemini and ElevenLabs
-- Python 3.7+ 
+- Python 3.7+
+
+You can test it out from here: https://voicellm.netlify.app/
