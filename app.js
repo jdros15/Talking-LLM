@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         try {
             updateStatus('Loading voices...');
-            const response = await fetch(`/api/elevenlabs/voices?api_key=${elevenlabsApiKey}`);
+            const response = await fetch(`/.netlify/functions/elevenlabs-voices?api_key=${elevenlabsApiKey}`);
             const data = await response.json();
             
             if (data.error) {
@@ -98,44 +98,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('No voices found, adding fallback voices');
                 // Add some default ElevenLabs voices as fallback
                 const fallbackVoices = [
-                    { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam' },
-                    { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Antoni' },
-                    { id: 'jsCqWAovK2LkecY7zXl4', name: 'Arnold' },
-                    { id: '21m00Tcm4TlvDq8ikWAM', name: 'Bella' },
-                    { id: 'AZnzlk1XvdvUeBnXmlld', name: 'Domi' },
-                    { id: 'MF3mGyEYCl7XYWbV9V6O', name: 'Elli' }
+                    { voice_id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam' },
+                    { voice_id: 'EXAVITQu4vr4xnSDxMaL', name: 'Bella' },
+                    { voice_id: 'yoZ06aMxZJJ28mfd3POQ', name: 'Sam' }
                 ];
                 
                 fallbackVoices.forEach(voice => {
                     const option = document.createElement('option');
-                    option.value = voice.id;
+                    option.value = voice.voice_id;
                     option.textContent = voice.name;
                     voiceSelector.appendChild(option);
                 });
                 
-                updateStatus('Using default voices');
+                updateStatus('Using fallback voices');
             }
         } catch (error) {
             console.error('Error loading voices:', error);
+            updateStatus('Error loading voices');
             
-            // Add fallback voices
+            // Add some default voices if we couldn't load them
             const fallbackVoices = [
-                { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam' },
-                { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Antoni' },
-                { id: 'jsCqWAovK2LkecY7zXl4', name: 'Arnold' },
-                { id: '21m00Tcm4TlvDq8ikWAM', name: 'Bella' },
-                { id: 'AZnzlk1XvdvUeBnXmlld', name: 'Domi' },
-                { id: 'MF3mGyEYCl7XYWbV9V6O', name: 'Elli' }
+                { voice_id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam' },
+                { voice_id: 'EXAVITQu4vr4xnSDxMaL', name: 'Bella' },
+                { voice_id: 'yoZ06aMxZJJ28mfd3POQ', name: 'Sam' }
             ];
             
             fallbackVoices.forEach(voice => {
                 const option = document.createElement('option');
-                option.value = voice.id;
+                option.value = voice.voice_id;
                 option.textContent = voice.name;
                 voiceSelector.appendChild(option);
             });
-            
-            updateStatus('Error loading voices, using defaults');
         }
     }
 
@@ -296,11 +289,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Add user message to chat
                 addMessage('user', '🎤 [Voice message]');
                 
-                // Send to backend for STT
+                // Send to Netlify Function for STT
                 console.log('Sending audio to server with Gemini API key length:', geminiApiKey.length);
                 try {
                     updateStatus('Transcribing audio...');
-                    const response = await fetch('/api/speech-to-text', {
+                    const response = await fetch('/.netlify/functions/speech-to-text', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -346,8 +339,8 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             updateStatus('Getting response...');
             
-            // Send message to your own backend that integrates with an LLM
-            const response = await fetch('/api/llm-response', {
+            // Call Netlify Function for LLM response
+            const response = await fetch('/.netlify/functions/llm-response', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -397,7 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const selectedVoice = voiceSelector.value;
             console.log(`Speaking response with voice: ${selectedVoice}`);
             
-            const response = await fetch('/api/text-to-speech', {
+            const response = await fetch('/.netlify/functions/text-to-speech', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -418,37 +411,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             if (!data.audio) {
-                throw new Error('No audio data received from the server');
+                throw new Error('No audio data returned');
             }
             
-            // Play audio
-            console.log('Creating audio element with data:', data.audio.substring(0, 100) + '...');
+            // Play the audio
             const audio = new Audio(data.audio);
+            audio.play();
             
-            // Add event listeners to debug audio playback
-            audio.addEventListener('play', () => {
-                console.log('Audio playback started');
-            });
-            
-            audio.addEventListener('ended', () => {
-                console.log('Audio playback ended');
+            audio.onended = () => {
                 updateStatus('Ready');
-            });
-            
-            audio.addEventListener('error', (e) => {
-                console.error('Audio playback error:', e);
-                updateStatus('Error playing audio');
-            });
-            
-            // Force audio to play
-            audio.play()
-                .then(() => {
-                    console.log('Audio play promise resolved successfully');
-                })
-                .catch((error) => {
-                    console.error('Error playing audio:', error);
-                    updateStatus('Error: ' + error.message);
-                });
+            };
             
         } catch (error) {
             console.error('Error speaking response:', error);
