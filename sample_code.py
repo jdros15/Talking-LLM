@@ -46,7 +46,7 @@ def generate():
         response_mime_type="text/plain",
         system_instruction=[
             types.Part.from_text(text="""You are a helpful, concise, and friendly assistant.
-Only respond with natural language. Strictly refrain from using special characters that aren't necessary in speaking (e.g.: * )
+Only respond with natural language. Strictly refrain from using special characters that aren't necessary in speaking (e.g.: * ). Don't write in Italics, Bold or any formatting as these will result in you writing with asterisks.
 Always maintain a conversational tone and avoid technical jargon unless specifically asked."""),
         ],
     )
