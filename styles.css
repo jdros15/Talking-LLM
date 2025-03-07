@@ -12,6 +12,68 @@
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
 }
 
+/* Welcome Overlay Styles */
+.welcome-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 1;
+    transition: opacity 0.3s ease-out;
+}
+
+.welcome-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.welcome-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: pulse-in 0.8s ease-out;
+}
+
+.welcome-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.welcome-logo i {
+    font-size: 4rem;
+    color: var(--primary-color);
+}
+
+.welcome-overlay h1 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+}
+
+@keyframes pulse-in {
+    0% {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    70% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -665,6 +727,15 @@ body {
         bottom: -18px;
         padding: 0.2rem 0.6rem;
         font-size: 0.7rem;
+    }
+    
+    /* Welcome overlay mobile styles */
+    .welcome-logo i {
+        font-size: 3rem;
+    }
+    
+    .welcome-overlay h1 {
+        font-size: 2rem;
     }
 }
 

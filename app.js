@@ -1,4 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Welcome Overlay
+    const welcomeOverlay = document.getElementById('welcome-overlay');
+    
+    // Hide welcome overlay after 1 second
+    setTimeout(() => {
+        welcomeOverlay.classList.add('hidden');
+        // Remove from DOM after transition completes
+        setTimeout(() => {
+            welcomeOverlay.style.display = 'none';
+        }, 300); // Match the transition duration from CSS
+    }, 1000);
+    
     // DOM Elements
     const recordButton = document.getElementById('record-button');
     const recordingStatus = document.getElementById('recording-status');
