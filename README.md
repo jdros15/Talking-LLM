@@ -1,10 +1,8 @@
-# Voice Chat with LLM (Netlify Version)
+![image](https://github.com/user-attachments/assets/343c001b-81d1-46a9-aed4-a8956fadbd01)# Voice Chat with LLM (Netlify Version)
 
 An aesthetically pleasing web application that provides a voice-based chat interface with an LLM (Language Learning Model). This application allows users to speak to the LLM and hear its responses, creating a more natural conversation experience.
 
-![image](https://github.com/user-attachments/assets/e5385268-7f0a-4f2a-a264-5f094328af46)
-![image](https://github.com/user-attachments/assets/61e11bf0-9615-4866-b497-b2d504365d5b)
-
+![image](https://github.com/user-attachments/assets/6511d402-e8b1-4260-9dc2-8b4179078ad9)
 
 ## Features
 
