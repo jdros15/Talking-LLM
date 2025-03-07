@@ -390,11 +390,11 @@ body {
     position: absolute;
     bottom: 0;
     right: 0;
-    left: 320px;
+    left: 0;
     background-color: var(--chat-bg);
     z-index: 10;
     gap: 1rem;
-    width: auto;
+    width: 100%;
 }
 
 .visualizer-container {
@@ -406,6 +406,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    max-width: calc(100% - 80px);
+    margin: 0 auto;
 }
 
 #visualizer {
@@ -427,6 +429,7 @@ body {
     transition: all 0.2s ease;
     font-size: 1.25rem;
     box-shadow: var(--shadow);
+    margin-left: auto;
 }
 
 .record-btn:hover {
@@ -576,6 +579,7 @@ body {
     
     .toggle-settings i {
         color: var(--primary-color);
+        filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
     }
     
     .api-settings, .voice-settings {
