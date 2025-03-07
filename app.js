@@ -16,7 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeSidebarButton = document.getElementById('close-sidebar');
     const settingsSidebar = document.getElementById('settings-sidebar');
     const settingsOverlay = document.getElementById('settings-overlay');
-    const clearConversationButton = document.getElementById('clear-conversation');
     const headerClearConversationButton = document.getElementById('header-clear-conversation');
     const clearConfirmationModal = document.getElementById('clear-confirmation-modal');
     const confirmClearButton = document.getElementById('confirm-clear');
@@ -48,8 +47,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Mobile variables
     let isMobile = window.innerWidth <= 768;
 
-    // Flag to track if chat is already initialized (prevents duplication)
-    let isChatInitialized = false;
+    // Flag to track if we should initialize chat
+    let shouldInitializeChat = true;
 
     // Chat history and audio cache
     let chatHistory = [];
@@ -105,27 +104,100 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize chat from cache if available
     function initializeChat() {
-        // Only initialize once to prevent duplication
-        if (isChatInitialized || chatHistory.length === 0) {
+        // Skip initialization if we've decided not to initialize
+        if (!shouldInitializeChat) {
             return;
         }
         
-        // Set flag to prevent future initializations
-        isChatInitialized = true;
-        
-        // Clear chat UI first
+        // Clear chat UI first (remove any default messages)
         chatMessages.innerHTML = '';
         
-        // Populate from history
-        chatHistory.forEach(message => {
-            addMessage(message.role, message.content, message.timestamp);
-        });
+        // Mark initialization as done to prevent future calls
+        shouldInitializeChat = false;
+        
+        // If there's no chat history, add a welcome message
+        if (chatHistory.length === 0) {
+            const welcomeMessage = "Hello! I'm your voice assistant. Please click the microphone button to start speaking.";
+            
+            // Add welcome message to UI (don't save to history yet)
+            const messageObj = {
+                role: 'assistant',
+                content: welcomeMessage,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Add message to UI
+            addMessageToUI(messageObj);
+            
+            // Save to chat history
+            chatHistory.push(messageObj);
+            safeLocalStorageSetItem('chatHistory', JSON.stringify(chatHistory));
+        } else {
+            // Populate from history
+            chatHistory.forEach(message => {
+                addMessageToUI(message);
+            });
+        }
         
         scrollToBottom();
     }
+    
+    // Separate function to add messages to UI only (without saving to history)
+    function addMessageToUI(messageObj) {
+        const { role, content, timestamp } = messageObj;
+        
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message');
+        messageElement.classList.add(role);
+        
+        const contentElement = document.createElement('div');
+        contentElement.classList.add('message-content');
+        
+        const paragraph = document.createElement('p');
+        paragraph.textContent = content;
+        
+        contentElement.appendChild(paragraph);
+        
+        // Add message footer with timestamp and audio replay button (for assistant messages)
+        const messageFooter = document.createElement('div');
+        messageFooter.classList.add('message-footer');
+        
+        // Add timestamp
+        const messageTimestamp = document.createElement('span');
+        messageTimestamp.classList.add('message-timestamp');
+        const formattedTime = new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        messageTimestamp.textContent = formattedTime;
+        messageFooter.appendChild(messageTimestamp);
+        
+        // Add audio replay button for assistant messages
+        if (role === 'assistant') {
+            const audioReplayBtn = document.createElement('button');
+            audioReplayBtn.classList.add('audio-replay-btn');
+            audioReplayBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+            audioReplayBtn.setAttribute('aria-label', 'Replay audio message');
+            audioReplayBtn.setAttribute('title', 'Replay audio message');
+            
+            // Add timestamp as data attribute for finding in cache
+            audioReplayBtn.dataset.timestamp = timestamp;
+            
+            // Add click event listener
+            audioReplayBtn.addEventListener('click', () => {
+                replayAudio(timestamp);
+            });
+            
+            messageFooter.appendChild(audioReplayBtn);
+        }
+        
+        contentElement.appendChild(messageFooter);
+        messageElement.appendChild(contentElement);
+        
+        chatMessages.appendChild(messageElement);
+        
+        return messageElement;
+    }
 
-    // Initialize chat from cache only once
-    initializeChat();
+    // Initialize chat from cache only once, after a small delay to ensure DOM is ready
+    setTimeout(initializeChat, 100);
 
     // Show clear conversation confirmation modal
     function showClearConfirmationModal() {
@@ -192,11 +264,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Clear conversation button (in settings)
-    if (clearConversationButton) {
-        clearConversationButton.addEventListener('click', showClearConfirmationModal);
-    }
-    
     // Header clear conversation button
     if (headerClearConversationButton) {
         headerClearConversationButton.addEventListener('click', showClearConfirmationModal);
@@ -784,62 +851,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add message to chat
     function addMessage(role, content, timestamp = null) {
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('message');
-        messageElement.classList.add(role);
-        
-        const contentElement = document.createElement('div');
-        contentElement.classList.add('message-content');
-        
-        const paragraph = document.createElement('p');
-        paragraph.textContent = content;
-        
-        contentElement.appendChild(paragraph);
-        
-        // Add message footer with timestamp and audio replay button (for assistant messages)
-        const messageFooter = document.createElement('div');
-        messageFooter.classList.add('message-footer');
-        
-        // Add timestamp
-        const messageTimestamp = document.createElement('span');
-        messageTimestamp.classList.add('message-timestamp');
         const currentTime = timestamp || new Date().toISOString();
-        const formattedTime = new Date(currentTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        messageTimestamp.textContent = formattedTime;
-        messageFooter.appendChild(messageTimestamp);
         
-        // Add audio replay button for assistant messages
-        if (role === 'assistant') {
-            const audioReplayBtn = document.createElement('button');
-            audioReplayBtn.classList.add('audio-replay-btn');
-            audioReplayBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
-            audioReplayBtn.setAttribute('aria-label', 'Replay audio message');
-            audioReplayBtn.setAttribute('title', 'Replay audio message');
-            
-            // Add timestamp as data attribute for finding in cache
-            audioReplayBtn.dataset.timestamp = currentTime;
-            
-            // Add click event listener
-            audioReplayBtn.addEventListener('click', () => {
-                replayAudio(currentTime);
-            });
-            
-            messageFooter.appendChild(audioReplayBtn);
-        }
+        // Create message object
+        const messageObj = {
+            role: role,
+            content: content,
+            timestamp: currentTime
+        };
         
-        contentElement.appendChild(messageFooter);
-        messageElement.appendChild(contentElement);
+        // Add to UI
+        addMessageToUI(messageObj);
         
-        chatMessages.appendChild(messageElement);
-        
-        // Save to chat history
-        if (!timestamp) { // Only save new messages
-            const messageObj = {
-                role: role,
-                content: content,
-                timestamp: currentTime
-            };
-            
+        // Save to chat history (only if it's a new message)
+        if (!timestamp) {
             chatHistory.push(messageObj);
             safeLocalStorageSetItem('chatHistory', JSON.stringify(chatHistory));
             
@@ -850,7 +875,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Ensure smooth scrolling, especially on mobile
         setTimeout(scrollToBottom, 50);
         
-        return messageElement;
+        return messageObj;
     }
 
     // Update last user message
