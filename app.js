@@ -575,14 +575,24 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const llmResponse = data.response;
             
-            // Add LLM message to chat
-            addMessage('assistant', llmResponse);
+            // Add LLM message to chat - this creates the timestamp
+            const messageElement = addMessage('assistant', llmResponse);
+            
+            // Get the timestamp that was just created
+            const messageTimestamp = messageElement.querySelector('.audio-replay-btn').dataset.timestamp;
             
             // Add to chat history
-            chatHistory.push({ role: 'assistant', content: llmResponse });
-            
-            // Speak the response
-            await speakResponse(llmResponse);
+            const lastIndex = chatHistory.length - 1;
+            if (lastIndex >= 0 && chatHistory[lastIndex].role === 'assistant') {
+                // Store the timestamp for audio caching
+                const currentTimestamp = chatHistory[lastIndex].timestamp;
+                
+                // Speak the response - pass the timestamp for proper audio caching
+                await speakResponse(llmResponse, currentTimestamp);
+            } else {
+                console.error('Could not find assistant message in chat history');
+                await speakResponse(llmResponse, messageTimestamp);
+            }
             
             updateStatus('Ready');
         } catch (error) {
@@ -591,14 +601,14 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Fallback response in case of error
             const fallbackResponse = "I'm sorry, I couldn't process your request. Please try again.";
-            addMessage('assistant', fallbackResponse);
-            chatHistory.push({ role: 'assistant', content: fallbackResponse });
-            await speakResponse(fallbackResponse);
+            const messageElement = addMessage('assistant', fallbackResponse);
+            const messageTimestamp = messageElement.querySelector('.audio-replay-btn').dataset.timestamp;
+            await speakResponse(fallbackResponse, messageTimestamp);
         }
     }
 
     // Speak response using ElevenLabs
-    async function speakResponse(text) {
+    async function speakResponse(text, timestamp) {
         try {
             // Show generating status (persistent until changed)
             updateStatus('Generating audio...', 'generating', -1);
@@ -637,11 +647,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('No audio data returned from ElevenLabs');
             }
             
-            // Cache the audio with timestamp from the last message
-            const lastMessageTimestamp = chatHistory[chatHistory.length - 1].timestamp;
-            audioCache[lastMessageTimestamp] = data.audio;
-            safeLocalStorageSetItem('audioCache', JSON.stringify(audioCache));
-            trimCache(); // Trim cache if needed
+            // Cache the audio with timestamp
+            if (timestamp) {
+                audioCache[timestamp] = data.audio;
+                safeLocalStorageSetItem('audioCache', JSON.stringify(audioCache));
+                trimCache(); // Trim cache if needed
+            } else {
+                console.error('Could not find timestamp for the last assistant message');
+            }
             
             // Change status to speaking
             updateStatus('Speaking...', 'speaking', -1);
@@ -745,7 +758,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Add click event listener
             audioReplayBtn.addEventListener('click', () => {
-                replayAudio(contentElement.textContent, currentTime);
+                replayAudio(currentTime);
             });
             
             messageFooter.appendChild(audioReplayBtn);
@@ -796,7 +809,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Replay audio from cache
-    async function replayAudio(text, timestamp) {
+    async function replayAudio(timestamp) {
         try {
             // Check if audio exists in cache
             if (audioCache[timestamp]) {
@@ -804,45 +817,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
-            // If not in cache, regenerate
-            updateStatus('Generating audio...', 'generating', -1);
-            
-            const selectedVoice = voiceSelector.value;
-            
-            const response = await fetch('/.netlify/functions/text-to-speech', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    text: text,
-                    elevenlabs_api_key: elevenlabsApiKey,
-                    voice_id: selectedVoice
-                })
-            });
-            
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || `ElevenLabs API error (${response.status})`);
-            }
-            
-            const data = await response.json();
-            
-            if (data.error) {
-                throw new Error(data.error);
-            }
-            
-            if (!data.audio) {
-                throw new Error('No audio data returned from ElevenLabs');
-            }
-            
-            // Cache the audio
-            audioCache[timestamp] = data.audio;
-            safeLocalStorageSetItem('audioCache', JSON.stringify(audioCache));
-            trimCache(); // Trim cache if needed
-            
-            // Play the audio
-            playAudioFromCache(timestamp);
+            // If not in cache, show error
+            updateStatus('Audio not available', 'error', 3000);
             
         } catch (error) {
             console.error('Error playing audio:', error);

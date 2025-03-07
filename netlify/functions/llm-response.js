@@ -19,8 +19,8 @@ exports.handler = async function(event, context) {
     
     console.log(`User message: ${message}`);
     
-    // System prompt to prevent asterisks and limit response length
-    const noAsterisksPrompt = "IMPORTANT: NEVER use asterisks (*) in your responses. Keep your answer under 240 characters. Be concise and direct. Use quotes or ALL CAPS for emphasis instead of asterisks.";
+    // Updated system prompt with less emphasis
+    const systemPrompt = "IMPORTANT: NEVER use asterisks (*) in your responses. Keep your answer under 240 characters. Be concise and direct. Use emphasis sparingly. Avoid excessive use of ALL CAPS. Only capitalize for acronyms or subtle emphasis of 1-2 key words when necessary. Use a natural, conversational tone.";
     
     // Prepare the request for Gemini API with system prompt
     const requestData = {
@@ -28,7 +28,7 @@ exports.handler = async function(event, context) {
         {
           parts: [
             {
-              text: noAsterisksPrompt + "\n\n" + message
+              text: systemPrompt + "\n\n" + message
             }
           ]
         }
@@ -78,7 +78,7 @@ exports.handler = async function(event, context) {
               role: "user",
               parts: [
                 {
-                  text: noAsterisksPrompt + "\n\n" + message
+                  text: systemPrompt + "\n\n" + message
                 }
               ]
             }
