@@ -64,6 +64,9 @@
                     <span class="status-indicator"></span>
                     <span class="status-text">Ready</span>
                 </div>
+                <button id="header-clear-conversation" class="header-clear-conversation" aria-label="Clear conversation">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
             </div>
             
             <div class="chat-messages" id="chat-messages">
@@ -87,6 +90,20 @@
                         <span></span><span></span><span></span>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add modal for clear confirmation -->
+    <div class="modal-overlay" id="clear-confirmation-modal">
+        <div class="modal">
+            <div class="modal-title">Clear Conversation</div>
+            <div class="modal-content">
+                <p>Are you sure you want to clear the entire conversation? This action cannot be undone.</p>
+            </div>
+            <div class="modal-actions">
+                <button id="cancel-clear" class="btn">Cancel</button>
+                <button id="confirm-clear" class="btn danger">Clear</button>
             </div>
         </div>
     </div>

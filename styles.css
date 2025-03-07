@@ -18,16 +18,28 @@
     box-sizing: border-box;
 }
 
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
 body {
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-color);
     color: var(--text-color);
     line-height: 1.5;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-sizing: border-box;
+    width: 100%;
+    position: relative;
+    overflow-x: hidden;
 }
 
 .container {
     display: flex;
     height: 100vh;
+    height: -webkit-fill-available;
     max-width: 1600px;
     margin: 0 auto;
 }
@@ -41,6 +53,8 @@ body {
     display: flex;
     flex-direction: column;
     gap: 2rem;
+    overflow-y: auto;
+    max-height: 100vh;
 }
 
 .logo {
@@ -134,6 +148,8 @@ body {
 .toggle-settings {
     position: absolute;
     left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
     background: transparent;
     border: none;
     color: #7b68ee;
@@ -532,9 +548,12 @@ body {
     
     .toggle-settings {
         display: flex;
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
         align-items: center;
         justify-content: center;
-        position: relative;
         font-size: 1.5rem;
         padding: 0.5rem;
         margin-right: 0.5rem;
@@ -549,7 +568,8 @@ body {
     }
     
     .chat-container {
-        height: 70vh;
+        height: calc(100vh - env(safe-area-inset-bottom));
+        padding-bottom: env(safe-area-inset-bottom);
     }
     
     .chat-messages {
@@ -562,12 +582,18 @@ body {
     }
     
     .chat-input {
-        padding: 0.75rem 1rem;
+        position: relative;
+        z-index: 2;
+        margin-bottom: env(safe-area-inset-bottom);
     }
     
     .record-btn {
         width: 55px;
         height: 55px;
+    }
+    
+    body {
+        padding-bottom: max(env(safe-area-inset-bottom), 20px);
     }
 }
 
@@ -680,11 +706,11 @@ body {
 }
 
 .settings-wrapper {
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 2rem;
-    transition: max-height 0.3s ease, opacity 0.3s ease;
-    overflow: hidden;
+    gap: 1.5rem;
+    flex: 1;
 }
 
 /* Settings tooltip */
@@ -713,9 +739,15 @@ body {
 @media (max-width: 768px) {
     .toggle-settings {
         display: flex;
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
         align-items: center;
         justify-content: center;
-        position: relative;
+        font-size: 1.5rem;
+        padding: 0.5rem;
+        margin-right: 0.5rem;
     }
     
     .settings-tooltip {
@@ -765,4 +797,84 @@ input[type="range"]::-moz-range-thumb {
     color: var(--text-secondary);
     font-weight: 500;
     margin-bottom: 0.5rem;
+}
+
+/* Clear conversation button in header */
+.header-clear-conversation {
+    position: absolute;
+    right: 1rem;
+    background: transparent;
+    border: none;
+    color: #f87171;
+    font-size: 1.25rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header-clear-conversation:hover {
+    transform: scale(1.1);
+    color: #ef4444;
+}
+
+.header-clear-conversation i {
+    filter: drop-shadow(0 0 2px rgba(239, 68, 68, 0.5));
+}
+
+/* Modal Styles for confirmation dialogs */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal {
+    background-color: var(--sidebar-bg);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: var(--shadow);
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.modal-content {
+    margin-bottom: 1.5rem;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .modal {
+        width: 85%;
+        padding: 1.25rem;
+    }
 } 

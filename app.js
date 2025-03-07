@@ -17,6 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const settingsSidebar = document.getElementById('settings-sidebar');
     const settingsOverlay = document.getElementById('settings-overlay');
     const clearConversationButton = document.getElementById('clear-conversation');
+    const headerClearConversationButton = document.getElementById('header-clear-conversation');
+    const clearConfirmationModal = document.getElementById('clear-confirmation-modal');
+    const confirmClearButton = document.getElementById('confirm-clear');
+    const cancelClearButton = document.getElementById('cancel-clear');
     const volumeSlider = document.getElementById('volume-slider');
 
     // API Keys
@@ -44,9 +48,31 @@ document.addEventListener('DOMContentLoaded', () => {
     // Mobile variables
     let isMobile = window.innerWidth <= 768;
 
+    // Flag to track if chat is already initialized (prevents duplication)
+    let isChatInitialized = false;
+
     // Chat history and audio cache
-    let chatHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
-    let audioCache = JSON.parse(localStorage.getItem('audioCache') || '{}');
+    let chatHistory = [];
+    let audioCache = {};
+
+    // Try to load chat history and audio cache from localStorage safely
+    try {
+        const storedChatHistory = localStorage.getItem('chatHistory');
+        if (storedChatHistory) {
+            chatHistory = JSON.parse(storedChatHistory) || [];
+        }
+        
+        const storedAudioCache = localStorage.getItem('audioCache');
+        if (storedAudioCache) {
+            audioCache = JSON.parse(storedAudioCache) || {};
+        }
+    } catch (error) {
+        console.error('Error loading data from localStorage:', error);
+        // Reset to defaults if there was an error
+        chatHistory = [];
+        audioCache = {};
+    }
+
     let isVisualizerActive = false;
 
     // Cache management
@@ -79,21 +105,67 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize chat from cache if available
     function initializeChat() {
-        if (chatHistory.length > 0) {
-            // Clear chat UI first
-            chatMessages.innerHTML = '';
-            
-            // Populate from history
-            chatHistory.forEach(message => {
-                addMessage(message.role, message.content, message.timestamp);
-            });
-            
-            scrollToBottom();
+        // Only initialize once to prevent duplication
+        if (isChatInitialized || chatHistory.length === 0) {
+            return;
         }
+        
+        // Set flag to prevent future initializations
+        isChatInitialized = true;
+        
+        // Clear chat UI first
+        chatMessages.innerHTML = '';
+        
+        // Populate from history
+        chatHistory.forEach(message => {
+            addMessage(message.role, message.content, message.timestamp);
+        });
+        
+        scrollToBottom();
     }
 
-    // Initialize chat from cache
+    // Initialize chat from cache only once
     initializeChat();
+
+    // Show clear conversation confirmation modal
+    function showClearConfirmationModal() {
+        clearConfirmationModal.classList.add('active');
+    }
+
+    // Hide clear conversation confirmation modal
+    function hideClearConfirmationModal() {
+        clearConfirmationModal.classList.remove('active');
+    }
+
+    // Clear conversation (after confirmation)
+    function clearConversation() {
+        // Clear chat history from localStorage
+        localStorage.removeItem('chatHistory');
+        
+        // Clear audio cache from localStorage
+        localStorage.removeItem('audioCache');
+        
+        // Reset variables
+        chatHistory = [];
+        audioCache = {};
+        
+        // Clear chat UI
+        chatMessages.innerHTML = '';
+        
+        // Add welcome message
+        const welcomeMessage = "Hello! I'm your voice assistant. Please click the microphone button to start speaking.";
+        addMessage('assistant', welcomeMessage);
+        
+        updateStatus('Conversation cleared');
+        
+        // Close sidebar on mobile
+        if (isMobile) {
+            closeSettingsSidebar();
+        }
+        
+        // Hide confirmation modal
+        hideClearConfirmationModal();
+    }
 
     // Volume slider change event
     if (volumeSlider) {
@@ -120,33 +192,24 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Clear conversation button
+    // Clear conversation button (in settings)
     if (clearConversationButton) {
-        clearConversationButton.addEventListener('click', () => {
-            // Clear chat history from localStorage
-            localStorage.removeItem('chatHistory');
-            
-            // Clear audio cache from localStorage
-            localStorage.removeItem('audioCache');
-            
-            // Reset variables
-            chatHistory = [];
-            audioCache = {};
-            
-            // Clear chat UI
-            chatMessages.innerHTML = '';
-            
-            // Add welcome message
-            const welcomeMessage = "Hello! I'm your voice assistant. Please click the microphone button to start speaking.";
-            addMessage('assistant', welcomeMessage);
-            
-            updateStatus('Conversation cleared');
-            
-            // Close sidebar on mobile
-            if (isMobile) {
-                closeSettingsSidebar();
-            }
-        });
+        clearConversationButton.addEventListener('click', showClearConfirmationModal);
+    }
+    
+    // Header clear conversation button
+    if (headerClearConversationButton) {
+        headerClearConversationButton.addEventListener('click', showClearConfirmationModal);
+    }
+    
+    // Confirm clear conversation button
+    if (confirmClearButton) {
+        confirmClearButton.addEventListener('click', clearConversation);
+    }
+    
+    // Cancel clear conversation button
+    if (cancelClearButton) {
+        cancelClearButton.addEventListener('click', hideClearConfirmationModal);
     }
 
     // Check if any API keys are missing and show a different welcome message
