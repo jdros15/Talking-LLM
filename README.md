@@ -94,7 +94,3 @@ After deployment, add the following environment variables in your Netlify dashbo
 
 - A Google Gemini API key from https://ai.google.dev/
 - An ElevenLabs API key from https://elevenlabs.io/
-
-## License
-
-[Your License Here] 
