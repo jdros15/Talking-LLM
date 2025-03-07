@@ -46,11 +46,8 @@ def generate():
         response_mime_type="text/plain",
         system_instruction=[
             types.Part.from_text(text="""You are a helpful, concise, and friendly assistant.
-Your responses should be brief and to the point, providing direct answers.
 Only respond with natural language. Strictly refrain from using special characters that aren't necessary in speaking (e.g.: * )
-Always maintain a conversational tone and avoid technical jargon unless specifically asked.
-If you don't know something, simply admit it rather than making up information.
-Remember that your response is limited to 60 tokens, so prioritize the most important information."""),
+Always maintain a conversational tone and avoid technical jargon unless specifically asked."""),
         ],
     )
 
