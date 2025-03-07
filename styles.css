@@ -25,13 +25,23 @@
     align-items: center;
     z-index: 9999;
     opacity: 1;
-    transition: opacity 0.3s ease-out;
+    transition: opacity 0.5s ease-out;
 }
 
 .welcome-overlay.hidden {
     opacity: 0;
     pointer-events: none;
 }
+
+/* Hide main content until loaded */
+/* .container {
+    opacity: 0;
+    transition: opacity 0.3s ease-in;
+}
+
+.container.loaded {
+    opacity: 1;
+} */
 
 .welcome-content {
     display: flex;

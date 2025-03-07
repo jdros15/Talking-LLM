@@ -2,14 +2,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Welcome Overlay
     const welcomeOverlay = document.getElementById('welcome-overlay');
     
-    // Hide welcome overlay after 1 second
-    setTimeout(() => {
-        welcomeOverlay.classList.add('hidden');
-        // Remove from DOM after transition completes
+    // Only hide welcome overlay after page is fully loaded
+    window.addEventListener('load', () => {
+        // Wait until everything is loaded + 1 second for visibility
         setTimeout(() => {
-            welcomeOverlay.style.display = 'none';
-        }, 300); // Match the transition duration from CSS
-    }, 1000);
+            welcomeOverlay.classList.add('hidden');
+            // Remove from DOM after transition completes
+            setTimeout(() => {
+                welcomeOverlay.style.display = 'none';
+            }, 500); // Match the transition duration from CSS
+        }, 1000);
+    });
     
     // DOM Elements
     const recordButton = document.getElementById('record-button');
