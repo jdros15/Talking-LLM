@@ -200,8 +200,8 @@ document.addEventListener('DOMContentLoaded', () => {
         messageTimestamp.textContent = formattedTime;
         messageFooter.appendChild(messageTimestamp);
         
-        // Add audio replay button for assistant messages
-        if (role === 'assistant') {
+        // Add audio replay button for assistant messages that aren't the introduction message
+        if (role === 'assistant' && content !== "Hello! I'm your voice assistant. Please click the microphone button to start speaking." && content !== "Hello! I'm your voice assistant. Please set your Gemini and ElevenLabs API keys in the settings first. Then click the microphone button to start speaking.") {
             const audioReplayBtn = document.createElement('button');
             audioReplayBtn.classList.add('audio-replay-btn');
             audioReplayBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
@@ -383,16 +383,15 @@ document.addEventListener('DOMContentLoaded', () => {
     initVisualizer();
     checkMobileState(); // Set initial state
     
-    // Set initial sidebar state class regardless of mobile check
-    const sidebarVisible = window.innerWidth > 768; // Default visible on desktop
-    if (sidebarVisible) {
+    // Set initial sidebar state
+    if (window.innerWidth <= 768) {
+        // On mobile, hide sidebar by default
+        document.body.classList.add('sidebar-closed');
+        settingsSidebar.classList.remove('active');
+    } else {
         // On desktop, sidebar is visible by default
         document.body.classList.remove('sidebar-closed');
         settingsSidebar.classList.add('active');
-    } else {
-        // On mobile, sidebar is hidden by default
-        document.body.classList.add('sidebar-closed');
-        settingsSidebar.classList.remove('active');
     }
     
     window.addEventListener('resize', () => {
