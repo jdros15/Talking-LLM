@@ -42,6 +42,7 @@ body {
     height: -webkit-fill-available;
     max-width: 1600px;
     margin: 0 auto;
+    overflow: hidden;
 }
 
 /* Sidebar Styles */
@@ -212,6 +213,8 @@ body {
     background-color: var(--chat-bg);
     border-radius: 0.5rem;
     overflow: hidden;
+    height: 100vh;
+    position: relative;
 }
 
 .chat-header {
@@ -221,7 +224,9 @@ body {
     padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--border-color);
     background-color: var(--chat-bg);
-    position: relative;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .chat-header h2 {
@@ -296,6 +301,7 @@ body {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    padding-bottom: 100px;
 }
 
 .message {
@@ -378,7 +384,12 @@ body {
     border-top: 1px solid var(--border-color);
     display: flex;
     align-items: center;
-    position: relative;
+    position: fixed;
+    bottom: 0;
+    left: 320px;
+    right: 0;
+    background-color: var(--chat-bg);
+    z-index: 10;
     gap: 1rem;
 }
 
@@ -502,8 +513,8 @@ body {
 @media (max-width: 768px) {
     .container {
         flex-direction: column;
-        height: auto;
         min-height: 100vh;
+        height: 100%;
     }
     
     .mobile-only {
@@ -568,12 +579,13 @@ body {
     }
     
     .chat-container {
-        height: calc(100vh - env(safe-area-inset-bottom));
-        padding-bottom: env(safe-area-inset-bottom);
+        height: 100vh;
+        width: 100%;
     }
     
     .chat-messages {
         padding: 1rem;
+        padding-bottom: 120px;
     }
     
     .message {
@@ -582,9 +594,9 @@ body {
     }
     
     .chat-input {
-        position: relative;
-        z-index: 2;
-        margin-bottom: env(safe-area-inset-bottom);
+        left: 0;
+        width: 100%;
+        bottom: env(safe-area-inset-bottom);
     }
     
     .record-btn {

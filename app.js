@@ -708,8 +708,14 @@ document.addEventListener('DOMContentLoaded', () => {
             // Add LLM message to chat - this creates the timestamp
             const messageElement = addMessage('assistant', llmResponse);
             
-            // Get the timestamp that was just created
-            const messageTimestamp = messageElement.querySelector('.audio-replay-btn').dataset.timestamp;
+            // Get the timestamp that was just created - safely
+            let messageTimestamp;
+            const replayButton = messageElement && messageElement.querySelector ? messageElement.querySelector('.audio-replay-btn') : null;
+            if (replayButton) {
+                messageTimestamp = replayButton.dataset.timestamp;
+            } else {
+                messageTimestamp = new Date().toISOString(); // Fallback to current time if button not found
+            }
             
             // Add to chat history
             const lastIndex = chatHistory.length - 1;
@@ -732,7 +738,16 @@ document.addEventListener('DOMContentLoaded', () => {
             // Fallback response in case of error
             const fallbackResponse = "I'm sorry, I couldn't process your request. Please try again.";
             const messageElement = addMessage('assistant', fallbackResponse);
-            const messageTimestamp = messageElement.querySelector('.audio-replay-btn').dataset.timestamp;
+            
+            // Safely get the timestamp
+            let messageTimestamp;
+            const replayButton = messageElement && messageElement.querySelector ? messageElement.querySelector('.audio-replay-btn') : null;
+            if (replayButton) {
+                messageTimestamp = replayButton.dataset.timestamp;
+            } else {
+                messageTimestamp = new Date().toISOString(); // Fallback to current time if button not found
+            }
+            
             await speakResponse(fallbackResponse, messageTimestamp);
         }
     }
