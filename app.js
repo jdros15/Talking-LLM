@@ -8,11 +8,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const visualizer = document.getElementById('visualizer');
     const visualizerCtx = visualizer.getContext('2d');
     const saveApiKeysButton = document.getElementById('save-api-keys');
+    const deleteApiKeysButton = document.getElementById('delete-api-keys');
     const geminiApiKeyInput = document.getElementById('gemini-api-key');
     const elevenlabsApiKeyInput = document.getElementById('elevenlabs-api-key');
     const voiceSelector = document.getElementById('voice-selector');
-    const toggleSidebarButton = document.getElementById('toggle-sidebar');
-    const settingsWrapper = document.querySelector('.settings-wrapper');
+    const toggleSettingsButton = document.getElementById('toggle-settings');
+    const closeSidebarButton = document.getElementById('close-sidebar');
+    const settingsSidebar = document.getElementById('settings-sidebar');
+    const settingsOverlay = document.getElementById('settings-overlay');
 
     // API Keys
     let geminiApiKey = localStorage.getItem('geminiApiKey') || '';
@@ -31,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Mobile variables
     let isMobile = window.innerWidth <= 768;
-    let isSidebarCollapsed = false;
 
     // Chat history
     let chatHistory = [];
@@ -51,26 +53,23 @@ document.addEventListener('DOMContentLoaded', () => {
         visualizer.height = visualizer.clientHeight;
     }
 
-    // Handle mobile sidebar toggle
-    function toggleSidebar() {
-        isSidebarCollapsed = !isSidebarCollapsed;
-        if (isSidebarCollapsed) {
-            settingsWrapper.classList.add('collapsed');
-            toggleSidebarButton.classList.add('active');
-        } else {
-            settingsWrapper.classList.remove('collapsed');
-            toggleSidebarButton.classList.remove('active');
-        }
+    // Open settings sidebar
+    function openSettingsSidebar() {
+        settingsSidebar.classList.add('active');
+        settingsOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Prevent scrolling
+    }
+
+    // Close settings sidebar
+    function closeSettingsSidebar() {
+        settingsSidebar.classList.remove('active');
+        settingsOverlay.classList.remove('active');
+        document.body.style.overflow = ''; // Restore scrolling
     }
 
     // Check if device is mobile and set initial state
     function checkMobileState() {
         isMobile = window.innerWidth <= 768;
-        if (!isMobile && settingsWrapper.classList.contains('collapsed')) {
-            settingsWrapper.classList.remove('collapsed');
-            toggleSidebarButton.classList.remove('active');
-            isSidebarCollapsed = false;
-        }
     }
 
     // Initialize
@@ -80,9 +79,46 @@ document.addEventListener('DOMContentLoaded', () => {
         checkMobileState();
     });
     
-    // Mobile sidebar toggle event
-    if (toggleSidebarButton) {
-        toggleSidebarButton.addEventListener('click', toggleSidebar);
+    // Settings sidebar toggle events
+    if (toggleSettingsButton) {
+        toggleSettingsButton.addEventListener('click', openSettingsSidebar);
+    }
+    
+    if (closeSidebarButton) {
+        closeSidebarButton.addEventListener('click', closeSettingsSidebar);
+    }
+    
+    if (settingsOverlay) {
+        settingsOverlay.addEventListener('click', closeSettingsSidebar);
+    }
+
+    // Delete API keys
+    if (deleteApiKeysButton) {
+        deleteApiKeysButton.addEventListener('click', () => {
+            // Clear localStorage
+            localStorage.removeItem('geminiApiKey');
+            localStorage.removeItem('elevenlabsApiKey');
+            
+            // Clear input fields
+            geminiApiKeyInput.value = '';
+            elevenlabsApiKeyInput.value = '';
+            
+            // Reset variables
+            geminiApiKey = '';
+            elevenlabsApiKey = '';
+            
+            // Reset voice selector
+            while (voiceSelector.options.length > 1) {
+                voiceSelector.remove(1);
+            }
+            
+            updateStatus('API keys deleted');
+            
+            // Close sidebar on mobile after deleting
+            if (isMobile) {
+                closeSettingsSidebar();
+            }
+        });
     }
 
     // Scroll to bottom of chat messages when new message is added
@@ -101,6 +137,11 @@ document.addEventListener('DOMContentLoaded', () => {
             
             updateStatus('API keys saved');
             loadVoices();
+            
+            // Close sidebar on mobile after saving
+            if (isMobile) {
+                closeSettingsSidebar();
+            }
         } else {
             updateStatus('Please enter both API keys');
         }

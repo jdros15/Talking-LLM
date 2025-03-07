@@ -10,12 +10,12 @@
 </head>
 <body>
     <div class="container">
-        <div class="sidebar">
+        <div class="sidebar" id="settings-sidebar">
             <div class="logo">
                 <i class="fas fa-robot"></i>
                 <h1>Voice LLM</h1>
-                <button id="toggle-sidebar" class="toggle-sidebar mobile-only">
-                    <i class="fas fa-chevron-up"></i>
+                <button id="close-sidebar" class="close-sidebar mobile-only">
+                    <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="settings-wrapper">
@@ -29,7 +29,10 @@
                         <label for="elevenlabs-api-key">ElevenLabs API Key</label>
                         <input type="password" id="elevenlabs-api-key" placeholder="Enter ElevenLabs API key">
                     </div>
-                    <button id="save-api-keys" class="btn primary">Save Keys</button>
+                    <div class="key-buttons">
+                        <button id="save-api-keys" class="btn primary">Save Keys</button>
+                        <button id="delete-api-keys" class="btn danger">Delete Keys</button>
+                    </div>
                 </div>
                 <div class="voice-settings">
                     <h3>Voice Settings</h3>
@@ -45,6 +48,9 @@
         
         <div class="chat-container">
             <div class="chat-header">
+                <button id="toggle-settings" class="toggle-settings mobile-only">
+                    <i class="fas fa-cog"></i>
+                </button>
                 <h2>Voice Chat</h2>
                 <div class="status" id="status">Ready</div>
             </div>
@@ -74,6 +80,7 @@
         </div>
     </div>
 
+    <div class="overlay" id="settings-overlay"></div>
     <script src="app.js"></script>
 </body>
 </html> 
