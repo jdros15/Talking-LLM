@@ -42,6 +42,14 @@
                             <option value="pNInz6obpgDQGcFmaJgB">Default Voice</option>
                         </select>
                     </div>
+                    <div class="input-group">
+                        <label for="volume-slider">Volume (60%)</label>
+                        <input type="range" id="volume-slider" min="0" max="100" value="60">
+                    </div>
+                </div>
+                <div class="conversation-settings">
+                    <h3>Conversation</h3>
+                    <button id="clear-conversation" class="btn danger">Clear Conversation</button>
                 </div>
             </div>
         </div>
@@ -52,7 +60,6 @@
                     <i class="fas fa-cog"></i>
                     <span class="settings-tooltip">Settings</span>
                 </button>
-                <h2>Voice Chat</h2>
                 <div class="status" id="status">
                     <span class="status-indicator"></span>
                     <span class="status-text">Ready</span>

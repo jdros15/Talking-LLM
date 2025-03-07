@@ -16,10 +16,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeSidebarButton = document.getElementById('close-sidebar');
     const settingsSidebar = document.getElementById('settings-sidebar');
     const settingsOverlay = document.getElementById('settings-overlay');
+    const clearConversationButton = document.getElementById('clear-conversation');
+    const volumeSlider = document.getElementById('volume-slider');
 
     // API Keys
     let geminiApiKey = localStorage.getItem('geminiApiKey') || '';
     let elevenlabsApiKey = localStorage.getItem('elevenlabsApiKey') || '';
+
+    // Volume setting
+    let audioVolume = parseFloat(localStorage.getItem('audioVolume') || '0.6');
+    if (volumeSlider) {
+        volumeSlider.value = audioVolume * 100;
+    }
 
     // Recording variables
     let mediaRecorder;
@@ -31,12 +39,115 @@ document.addEventListener('DOMContentLoaded', () => {
     let analyser;
     let source;
     let animationFrameId;
+    let audio; // To store current audio playback
 
     // Mobile variables
     let isMobile = window.innerWidth <= 768;
 
-    // Chat history
-    let chatHistory = [];
+    // Chat history and audio cache
+    let chatHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+    let audioCache = JSON.parse(localStorage.getItem('audioCache') || '{}');
+    let isVisualizerActive = false;
+
+    // Cache management
+    const MAX_CACHE_SIZE = 50; // Maximum number of messages to store
+    const MAX_AUDIO_CACHE_SIZE = 30; // Maximum number of audio files to cache
+
+    // Trim cache if it gets too large
+    function trimCache() {
+        // Trim chat history
+        if (chatHistory.length > MAX_CACHE_SIZE) {
+            chatHistory = chatHistory.slice(chatHistory.length - MAX_CACHE_SIZE);
+            safeLocalStorageSetItem('chatHistory', JSON.stringify(chatHistory));
+        }
+        
+        // Trim audio cache
+        const audioTimestamps = Object.keys(audioCache);
+        if (audioTimestamps.length > MAX_AUDIO_CACHE_SIZE) {
+            // Sort timestamps by date (oldest first)
+            audioTimestamps.sort((a, b) => new Date(a) - new Date(b));
+            
+            // Remove oldest entries
+            const toRemove = audioTimestamps.slice(0, audioTimestamps.length - MAX_AUDIO_CACHE_SIZE);
+            toRemove.forEach(timestamp => {
+                delete audioCache[timestamp];
+            });
+            
+            safeLocalStorageSetItem('audioCache', JSON.stringify(audioCache));
+        }
+    }
+
+    // Initialize chat from cache if available
+    function initializeChat() {
+        if (chatHistory.length > 0) {
+            // Clear chat UI first
+            chatMessages.innerHTML = '';
+            
+            // Populate from history
+            chatHistory.forEach(message => {
+                addMessage(message.role, message.content, message.timestamp);
+            });
+            
+            scrollToBottom();
+        }
+    }
+
+    // Initialize chat from cache
+    initializeChat();
+
+    // Volume slider change event
+    if (volumeSlider) {
+        const volumeSliderLabel = document.querySelector('label[for="volume-slider"]');
+        
+        // Set initial label
+        if (volumeSliderLabel) {
+            volumeSliderLabel.textContent = `Volume (${Math.round(audioVolume * 100)}%)`;
+        }
+        
+        volumeSlider.addEventListener('input', () => {
+            audioVolume = volumeSlider.value / 100;
+            safeLocalStorageSetItem('audioVolume', audioVolume.toString());
+            
+            // Update label
+            if (volumeSliderLabel) {
+                volumeSliderLabel.textContent = `Volume (${volumeSlider.value}%)`;
+            }
+            
+            // Update current audio if playing
+            if (audio) {
+                audio.volume = audioVolume;
+            }
+        });
+    }
+
+    // Clear conversation button
+    if (clearConversationButton) {
+        clearConversationButton.addEventListener('click', () => {
+            // Clear chat history from localStorage
+            localStorage.removeItem('chatHistory');
+            
+            // Clear audio cache from localStorage
+            localStorage.removeItem('audioCache');
+            
+            // Reset variables
+            chatHistory = [];
+            audioCache = {};
+            
+            // Clear chat UI
+            chatMessages.innerHTML = '';
+            
+            // Add welcome message
+            const welcomeMessage = "Hello! I'm your voice assistant. Please click the microphone button to start speaking.";
+            addMessage('assistant', welcomeMessage);
+            
+            updateStatus('Conversation cleared');
+            
+            // Close sidebar on mobile
+            if (isMobile) {
+                closeSettingsSidebar();
+            }
+        });
+    }
 
     // Check if any API keys are missing and show a different welcome message
     function updateWelcomeMessage() {
@@ -148,8 +259,8 @@ document.addEventListener('DOMContentLoaded', () => {
         elevenlabsApiKey = elevenlabsApiKeyInput.value.trim();
 
         if (geminiApiKey && elevenlabsApiKey) {
-            localStorage.setItem('geminiApiKey', geminiApiKey);
-            localStorage.setItem('elevenlabsApiKey', elevenlabsApiKey);
+            safeLocalStorageSetItem('geminiApiKey', geminiApiKey);
+            safeLocalStorageSetItem('elevenlabsApiKey', elevenlabsApiKey);
             
             updateStatus('API keys saved');
             loadVoices();
@@ -261,7 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Draw visualizer
     function drawVisualizer() {
-        if (!analyser) return;
+        if (!analyser && !isVisualizerActive) return;
         
         const bufferLength = analyser.frequencyBinCount;
         const dataArray = new Uint8Array(bufferLength);
@@ -526,11 +637,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('No audio data returned from ElevenLabs');
             }
             
+            // Cache the audio with timestamp from the last message
+            const lastMessageTimestamp = chatHistory[chatHistory.length - 1].timestamp;
+            audioCache[lastMessageTimestamp] = data.audio;
+            safeLocalStorageSetItem('audioCache', JSON.stringify(audioCache));
+            trimCache(); // Trim cache if needed
+            
             // Change status to speaking
             updateStatus('Speaking...', 'speaking', -1);
             
             // Play the audio
-            const audio = new Audio(data.audio);
+            audio = new Audio(data.audio);
+            audio.volume = audioVolume;
+            
+            // Setup audio context for visualization
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 256;
+                
+                const track = audioContext.createMediaElementSource(audio);
+                track.connect(analyser);
+                analyser.connect(audioContext.destination);
+                
+                // Start visualizer
+                isVisualizerActive = true;
+                drawVisualizer();
+            } catch (e) {
+                console.error('Error setting up audio visualization:', e);
+            }
             
             // Setup audio events
             audio.addEventListener('play', () => {
@@ -540,17 +675,29 @@ document.addEventListener('DOMContentLoaded', () => {
             audio.addEventListener('error', (e) => {
                 console.error('Audio playback error:', e);
                 updateStatus('Audio playback error', 'error');
+                isVisualizerActive = false;
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                }
             });
             
             audio.addEventListener('ended', () => {
                 console.log('Audio playback complete');
                 updateStatus('Ready');
+                isVisualizerActive = false;
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                }
             });
             
             // Start playback
             audio.play().catch(error => {
                 console.error('Audio play error:', error);
                 updateStatus('Audio playback failed', 'error');
+                isVisualizerActive = false;
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                }
             });
             
         } catch (error) {
@@ -560,7 +707,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Add message to chat
-    function addMessage(role, content) {
+    function addMessage(role, content, timestamp = null) {
         const messageElement = document.createElement('div');
         messageElement.classList.add('message');
         messageElement.classList.add(role);
@@ -572,9 +719,57 @@ document.addEventListener('DOMContentLoaded', () => {
         paragraph.textContent = content;
         
         contentElement.appendChild(paragraph);
+        
+        // Add message footer with timestamp and audio replay button (for assistant messages)
+        const messageFooter = document.createElement('div');
+        messageFooter.classList.add('message-footer');
+        
+        // Add timestamp
+        const messageTimestamp = document.createElement('span');
+        messageTimestamp.classList.add('message-timestamp');
+        const currentTime = timestamp || new Date().toISOString();
+        const formattedTime = new Date(currentTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        messageTimestamp.textContent = formattedTime;
+        messageFooter.appendChild(messageTimestamp);
+        
+        // Add audio replay button for assistant messages
+        if (role === 'assistant') {
+            const audioReplayBtn = document.createElement('button');
+            audioReplayBtn.classList.add('audio-replay-btn');
+            audioReplayBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+            audioReplayBtn.setAttribute('aria-label', 'Replay audio message');
+            audioReplayBtn.setAttribute('title', 'Replay audio message');
+            
+            // Add timestamp as data attribute for finding in cache
+            audioReplayBtn.dataset.timestamp = currentTime;
+            
+            // Add click event listener
+            audioReplayBtn.addEventListener('click', () => {
+                replayAudio(contentElement.textContent, currentTime);
+            });
+            
+            messageFooter.appendChild(audioReplayBtn);
+        }
+        
+        contentElement.appendChild(messageFooter);
         messageElement.appendChild(contentElement);
         
         chatMessages.appendChild(messageElement);
+        
+        // Save to chat history
+        if (!timestamp) { // Only save new messages
+            const messageObj = {
+                role: role,
+                content: content,
+                timestamp: currentTime
+            };
+            
+            chatHistory.push(messageObj);
+            safeLocalStorageSetItem('chatHistory', JSON.stringify(chatHistory));
+            
+            // Trim cache if needed
+            trimCache();
+        }
         
         // Ensure smooth scrolling, especially on mobile
         setTimeout(scrollToBottom, 50);
@@ -589,8 +784,139 @@ document.addEventListener('DOMContentLoaded', () => {
             const lastUserMessage = userMessages[userMessages.length - 1];
             const paragraph = lastUserMessage.querySelector('p');
             paragraph.textContent = content;
+            
+            // Update in chat history
+            if (chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'user') {
+                chatHistory[chatHistory.length - 1].content = content;
+                safeLocalStorageSetItem('chatHistory', JSON.stringify(chatHistory));
+            }
+            
             setTimeout(scrollToBottom, 50);
         }
+    }
+
+    // Replay audio from cache
+    async function replayAudio(text, timestamp) {
+        try {
+            // Check if audio exists in cache
+            if (audioCache[timestamp]) {
+                playAudioFromCache(timestamp);
+                return;
+            }
+            
+            // If not in cache, regenerate
+            updateStatus('Generating audio...', 'generating', -1);
+            
+            const selectedVoice = voiceSelector.value;
+            
+            const response = await fetch('/.netlify/functions/text-to-speech', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    text: text,
+                    elevenlabs_api_key: elevenlabsApiKey,
+                    voice_id: selectedVoice
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `ElevenLabs API error (${response.status})`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            if (!data.audio) {
+                throw new Error('No audio data returned from ElevenLabs');
+            }
+            
+            // Cache the audio
+            audioCache[timestamp] = data.audio;
+            safeLocalStorageSetItem('audioCache', JSON.stringify(audioCache));
+            trimCache(); // Trim cache if needed
+            
+            // Play the audio
+            playAudioFromCache(timestamp);
+            
+        } catch (error) {
+            console.error('Error playing audio:', error);
+            updateStatus(`Audio playback error: ${error.message}`, 'error', 5000);
+        }
+    }
+
+    // Play audio from cache
+    function playAudioFromCache(timestamp) {
+        // Stop any currently playing audio
+        if (audio) {
+            audio.pause();
+            audio.currentTime = 0;
+        }
+        
+        // Update status to speaking
+        updateStatus('Speaking...', 'speaking', -1);
+        
+        // Create and play audio
+        audio = new Audio(audioCache[timestamp]);
+        audio.volume = audioVolume;
+        
+        // Setup audio context for visualization
+        try {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 256;
+            
+            const track = audioContext.createMediaElementSource(audio);
+            track.connect(analyser);
+            analyser.connect(audioContext.destination);
+            
+            // Start visualizer
+            isVisualizerActive = true;
+            drawVisualizer();
+        } catch (e) {
+            console.error('Error setting up audio visualization:', e);
+        }
+        
+        // Setup audio events
+        audio.addEventListener('play', () => {
+            console.log('Audio started playing');
+        });
+        
+        audio.addEventListener('error', (e) => {
+            console.error('Audio playback error:', e);
+            updateStatus('Audio playback error', 'error');
+            isVisualizerActive = false;
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+        });
+        
+        audio.addEventListener('ended', () => {
+            console.log('Audio playback complete');
+            updateStatus('Ready');
+            isVisualizerActive = false;
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+        });
+        
+        // Start playback
+        audio.play().catch(error => {
+            console.error('Audio play error:', error);
+            updateStatus('Audio playback failed', 'error');
+            isVisualizerActive = false;
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+        });
     }
 
     // Toggle recording
@@ -601,4 +927,34 @@ document.addEventListener('DOMContentLoaded', () => {
             startRecording();
         }
     });
+
+    // Safely store data in localStorage
+    function safeLocalStorageSetItem(key, value) {
+        try {
+            localStorage.setItem(key, value);
+            return true;
+        } catch (e) {
+            console.error('Error storing data in localStorage:', e);
+            
+            // If quota exceeded error, try to clear some space
+            if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+                // Force trim cache more aggressively
+                MAX_AUDIO_CACHE_SIZE = Math.floor(MAX_AUDIO_CACHE_SIZE / 2);
+                trimCache();
+                
+                try {
+                    // Try again
+                    localStorage.setItem(key, value);
+                    return true;
+                } catch (e2) {
+                    console.error('Failed to store data even after trimming cache:', e2);
+                    updateStatus('Storage limit reached. Some data may be lost.', 'error', 5000);
+                    return false;
+                }
+            }
+            
+            updateStatus('Error saving data', 'error', 5000);
+            return false;
+        }
+    }
 }); 
