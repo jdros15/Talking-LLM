@@ -68,7 +68,7 @@ exports.handler = async function(event, context) {
         {
           parts: [
             {
-              text: "You're an expert at transcribing audio. Please accurately transcribe the audio file I'm about to send you. Only return the transcription with no additional text."
+              text: "You're an expert at transcribing audio. Please accurately transcribe the audio file I'm about to send you. Only return the transcription with no additional text. Never use asterisks (*) in your response."
             },
             {
               inline_data: {
@@ -79,13 +79,6 @@ exports.handler = async function(event, context) {
           ]
         }
       ],
-      systemInstruction: {
-        parts: [
-          {
-            text: "Transcribe the audio accurately. Never use asterisks (*) in your response."
-          }
-        ]
-      },
       generationConfig: {
         temperature: 0
       }
@@ -123,6 +116,9 @@ exports.handler = async function(event, context) {
           {
             parts: [
               {
+                text: "Transcribe this audio accurately. Never use asterisks in your response."
+              },
+              {
                 inline_data: {
                   mime_type: `audio/${fileExtension.substring(1)}`,
                   data: audioParts[1]
@@ -131,13 +127,6 @@ exports.handler = async function(event, context) {
             ]
           }
         ],
-        systemInstruction: {
-          parts: [
-            {
-              text: "Transcribe the audio accurately. Never use asterisks (*) in your response."
-            }
-          ]
-        },
         generationConfig: {
           temperature: 0
         }

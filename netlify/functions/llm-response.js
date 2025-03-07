@@ -20,15 +20,7 @@ exports.handler = async function(event, context) {
     console.log(`User message: ${message}`);
     
     // System prompt to prevent asterisks and limit response length
-    const systemPrompt = `You are a helpful AI assistant. Follow these rules strictly:
-
-1. NEVER use asterisks (*) in your responses - not for emphasis, lists, or formatting.
-2. Instead of asterisks for emphasis, use quotes, ALL CAPS, or dashes.
-3. For lists, use numbers or hyphens (-) instead of bullet points.
-4. Keep ALL responses under 240 characters. Be concise and direct.
-5. If you cannot answer within 240 characters, prioritize the most important information.
-
-Respond with short, clear answers without asterisks.`;
+    const noAsterisksPrompt = "IMPORTANT: NEVER use asterisks (*) in your responses. Keep your answer under 240 characters. Be concise and direct. Use quotes or ALL CAPS for emphasis instead of asterisks.";
     
     // Prepare the request for Gemini API with system prompt
     const requestData = {
@@ -36,18 +28,11 @@ Respond with short, clear answers without asterisks.`;
         {
           parts: [
             {
-              text: message
+              text: noAsterisksPrompt + "\n\n" + message
             }
           ]
         }
       ],
-      systemInstruction: {
-        parts: [
-          {
-            text: systemPrompt
-          }
-        ]
-      },
       generationConfig: {
         maxOutputTokens: 60 // Approximately 240 characters
       }
@@ -93,18 +78,11 @@ Respond with short, clear answers without asterisks.`;
               role: "user",
               parts: [
                 {
-                  text: message
+                  text: noAsterisksPrompt + "\n\n" + message
                 }
               ]
             }
           ],
-          systemInstruction: {
-            parts: [
-              {
-                text: systemPrompt
-              }
-            ]
-          },
           generationConfig: {
             temperature: 0.7,
             maxOutputTokens: 60 // Approximately 240 characters
