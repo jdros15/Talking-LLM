@@ -2,7 +2,9 @@
 
 An aesthetically pleasing web application that provides a voice-based chat interface with an LLM (Language Learning Model). This application allows users to speak to the LLM and hear its responses, creating a more natural conversation experience.
 
-![image](https://github.com/user-attachments/assets/61ce546c-33ee-4183-9505-b3377dc7b793)
+![image](https://github.com/user-attachments/assets/e5385268-7f0a-4f2a-a264-5f094328af46)
+![image](https://github.com/user-attachments/assets/61e11bf0-9615-4866-b497-b2d504365d5b)
+
 
 ## Features
 
