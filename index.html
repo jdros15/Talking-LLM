@@ -48,8 +48,9 @@
         
         <div class="chat-container">
             <div class="chat-header">
-                <button id="toggle-settings" class="toggle-settings mobile-only">
+                <button id="toggle-settings" class="toggle-settings mobile-only" aria-label="Open Settings">
                     <i class="fas fa-cog"></i>
+                    <span class="settings-tooltip">Settings</span>
                 </button>
                 <h2>Voice Chat</h2>
                 <div class="status" id="status">Ready</div>
@@ -58,7 +59,7 @@
             <div class="chat-messages" id="chat-messages">
                 <div class="message assistant">
                     <div class="message-content">
-                        <p>Hello! I'm your voice assistant. Click the microphone button below to start speaking.</p>
+                        <p>Hello! I'm your voice assistant. Please set your Gemini and ElevenLabs API keys in the settings first. Then click the microphone button to start speaking.</p>
                     </div>
                 </div>
             </div>

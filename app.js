@@ -38,6 +38,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Chat history
     let chatHistory = [];
 
+    // Check if any API keys are missing and show a different welcome message
+    function updateWelcomeMessage() {
+        if (!geminiApiKey || !elevenlabsApiKey) {
+            const firstMessage = chatMessages.querySelector('.message.assistant');
+            if (firstMessage) {
+                const paragraph = firstMessage.querySelector('p');
+                if (paragraph) {
+                    paragraph.textContent = "Hello! I'm your voice assistant. Please set your Gemini and ElevenLabs API keys in the settings first. Then click the microphone button to start speaking.";
+                }
+            }
+        }
+    }
+
     // Load saved API keys
     if (geminiApiKey) {
         geminiApiKeyInput.value = geminiApiKey;
@@ -46,6 +59,9 @@ document.addEventListener('DOMContentLoaded', () => {
         elevenlabsApiKeyInput.value = elevenlabsApiKey;
         loadVoices();
     }
+    
+    // Update welcome message based on API key status
+    updateWelcomeMessage();
 
     // Initialize visualizer
     function initVisualizer() {

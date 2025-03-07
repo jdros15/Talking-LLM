@@ -134,15 +134,22 @@ body {
 .toggle-settings {
     background: transparent;
     border: none;
-    color: var(--primary-color);
-    font-size: 1.25rem;
+    color: #7b68ee;
+    font-size: 1.75rem;
     padding: 0.5rem;
     cursor: pointer;
     transition: all 0.2s ease;
+    display: none;
+    z-index: 10;
 }
 
 .toggle-settings:hover {
     transform: rotate(15deg);
+}
+
+.toggle-settings i {
+    color: #7b68ee;
+    filter: drop-shadow(0 0 2px rgba(123, 104, 238, 0.5));
 }
 
 /* Close sidebar button */
@@ -200,6 +207,8 @@ body {
 .chat-header h2 {
     font-size: 1.25rem;
     font-weight: 600;
+    flex: 1;
+    text-align: center;
 }
 
 .status {
@@ -393,7 +402,7 @@ body {
     }
     
     .mobile-only {
-        display: block;
+        display: block !important;
     }
     
     .sidebar {
@@ -418,12 +427,13 @@ body {
     .chat-header {
         display: flex;
         align-items: center;
-        padding: 1rem;
+        padding: 0.75rem 1rem;
     }
     
     .chat-header h2 {
         flex: 1;
         text-align: center;
+        margin: 0;
     }
     
     .settings-wrapper {
@@ -431,8 +441,18 @@ body {
         opacity: 1;
     }
     
-    .toggle-sidebar.active i {
-        transform: rotate(180deg);
+    .toggle-settings {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        font-size: 1.5rem;
+        padding: 0.5rem;
+        margin-right: 0.5rem;
+    }
+    
+    .toggle-settings i {
+        color: var(--primary-color);
     }
     
     .api-settings, .voice-settings {
@@ -576,4 +596,40 @@ body {
     gap: 2rem;
     transition: max-height 0.3s ease, opacity 0.3s ease;
     overflow: hidden;
+}
+
+/* Settings tooltip */
+.settings-tooltip {
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    margin-left: 5px;
+    box-shadow: var(--shadow);
+}
+
+.toggle-settings:hover .settings-tooltip {
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .toggle-settings {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+    
+    .settings-tooltip {
+        display: none; /* Hide tooltip on very small screens */
+    }
 } 
