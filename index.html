@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Chat with LLM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <i class="fas fa-robot"></i>
+                <h1>Voice LLM</h1>
+            </div>
+            <div class="api-settings">
+                <h3>API Settings</h3>
+                <div class="input-group">
+                    <label for="gemini-api-key">Gemini API Key</label>
+                    <input type="password" id="gemini-api-key" placeholder="Enter Gemini API key">
+                </div>
+                <div class="input-group">
+                    <label for="elevenlabs-api-key">ElevenLabs API Key</label>
+                    <input type="password" id="elevenlabs-api-key" placeholder="Enter ElevenLabs API key">
+                </div>
+                <button id="save-api-keys" class="btn primary">Save Keys</button>
+            </div>
+            <div class="voice-settings">
+                <h3>Voice Settings</h3>
+                <div class="input-group">
+                    <label for="voice-selector">TTS Voice</label>
+                    <select id="voice-selector">
+                        <option value="default">Default Voice</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-container">
+            <div class="chat-header">
+                <h2>Voice Chat</h2>
+                <div class="status" id="status">Ready</div>
+            </div>
+            
+            <div class="chat-messages" id="chat-messages">
+                <div class="message assistant">
+                    <div class="message-content">
+                        <p>Hello! I'm your voice assistant. Click the microphone button below to start speaking.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input">
+                <div class="visualizer-container">
+                    <canvas id="visualizer"></canvas>
+                </div>
+                <button id="record-button" class="record-btn">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <div class="recording-status" id="recording-status">
+                    <div class="recording-time">00:00</div>
+                    <div class="recording-indicator">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html> 

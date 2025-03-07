@@ -1,0 +1,329 @@
+:root {
+    --primary-color: #4f46e5;
+    --primary-hover: #4338ca;
+    --bg-color: #f9fafb;
+    --sidebar-bg: #ffffff;
+    --chat-bg: #ffffff;
+    --text-color: #1f2937;
+    --text-secondary: #6b7280;
+    --border-color: #e5e7eb;
+    --message-user: #e0e7ff;
+    --message-assistant: #f3f4f6;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.5;
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 320px;
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid var(--border-color);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.logo i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.logo h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.api-settings, .voice-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.api-settings h3, .voice-settings h3 {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.input-group label {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.input-group input, .input-group select {
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    transition: border-color 0.15s ease;
+}
+
+.input-group input:focus, .input-group select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.btn {
+    padding: 0.75rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: none;
+}
+
+.btn.primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn.primary:hover {
+    background-color: var(--primary-hover);
+}
+
+/* Chat Container Styles */
+.chat-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--chat-bg);
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.chat-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.status {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 1.5rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.message {
+    max-width: 80%;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    animation: fade-in 0.3s ease;
+}
+
+.message.user {
+    background-color: var(--message-user);
+    align-self: flex-end;
+    border-bottom-right-radius: 0;
+}
+
+.message.assistant {
+    background-color: var(--message-assistant);
+    align-self: flex-start;
+    border-bottom-left-radius: 0;
+}
+
+.message-content p {
+    margin-bottom: 0.5rem;
+}
+
+.message-content p:last-child {
+    margin-bottom: 0;
+}
+
+/* Chat Input Styles */
+.chat-input {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    position: relative;
+    gap: 1rem;
+}
+
+.visualizer-container {
+    flex: 1;
+    height: 60px;
+    background-color: var(--bg-color);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#visualizer {
+    width: 100%;
+    height: 100%;
+}
+
+.record-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1.25rem;
+    box-shadow: var(--shadow);
+}
+
+.record-btn:hover {
+    background-color: var(--primary-hover);
+    transform: scale(1.05);
+}
+
+.record-btn.recording {
+    background-color: #ef4444;
+    animation: pulse 1.5s infinite;
+}
+
+.recording-status {
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.recording-status.active {
+    opacity: 1;
+}
+
+.recording-indicator {
+    display: flex;
+    gap: 3px;
+}
+
+.recording-indicator span {
+    width: 4px;
+    height: 4px;
+    background-color: #ef4444;
+    border-radius: 50%;
+}
+
+.recording-indicator span:nth-child(1) {
+    animation: bounce 0.6s infinite 0.1s;
+}
+.recording-indicator span:nth-child(2) {
+    animation: bounce 0.6s infinite 0.2s;
+}
+.recording-indicator span:nth-child(3) {
+    animation: bounce 0.6s infinite 0.3s;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-4px);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .message {
+        max-width: 90%;
+    }
+} 
