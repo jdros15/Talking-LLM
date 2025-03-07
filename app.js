@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const geminiApiKeyInput = document.getElementById('gemini-api-key');
     const elevenlabsApiKeyInput = document.getElementById('elevenlabs-api-key');
     const voiceSelector = document.getElementById('voice-selector');
+    const toggleSidebarButton = document.getElementById('toggle-sidebar');
+    const settingsWrapper = document.querySelector('.settings-wrapper');
 
     // API Keys
     let geminiApiKey = localStorage.getItem('geminiApiKey') || '';
@@ -26,6 +28,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let analyser;
     let source;
     let animationFrameId;
+
+    // Mobile variables
+    let isMobile = window.innerWidth <= 768;
+    let isSidebarCollapsed = false;
 
     // Chat history
     let chatHistory = [];
@@ -45,9 +51,44 @@ document.addEventListener('DOMContentLoaded', () => {
         visualizer.height = visualizer.clientHeight;
     }
 
+    // Handle mobile sidebar toggle
+    function toggleSidebar() {
+        isSidebarCollapsed = !isSidebarCollapsed;
+        if (isSidebarCollapsed) {
+            settingsWrapper.classList.add('collapsed');
+            toggleSidebarButton.classList.add('active');
+        } else {
+            settingsWrapper.classList.remove('collapsed');
+            toggleSidebarButton.classList.remove('active');
+        }
+    }
+
+    // Check if device is mobile and set initial state
+    function checkMobileState() {
+        isMobile = window.innerWidth <= 768;
+        if (!isMobile && settingsWrapper.classList.contains('collapsed')) {
+            settingsWrapper.classList.remove('collapsed');
+            toggleSidebarButton.classList.remove('active');
+            isSidebarCollapsed = false;
+        }
+    }
+
     // Initialize
     initVisualizer();
-    window.addEventListener('resize', initVisualizer);
+    window.addEventListener('resize', () => {
+        initVisualizer();
+        checkMobileState();
+    });
+    
+    // Mobile sidebar toggle event
+    if (toggleSidebarButton) {
+        toggleSidebarButton.addEventListener('click', toggleSidebar);
+    }
+
+    // Scroll to bottom of chat messages when new message is added
+    function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
 
     // Save API Keys
     saveApiKeysButton.addEventListener('click', () => {
@@ -444,18 +485,21 @@ document.addEventListener('DOMContentLoaded', () => {
         messageElement.appendChild(contentElement);
         
         chatMessages.appendChild(messageElement);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        // Ensure smooth scrolling, especially on mobile
+        setTimeout(scrollToBottom, 50);
         
         return messageElement;
     }
 
     // Update last user message
     function updateLastUserMessage(content) {
-        const userMessages = chatMessages.querySelectorAll('.message.user');
+        const userMessages = document.querySelectorAll('.message.user');
         if (userMessages.length > 0) {
             const lastUserMessage = userMessages[userMessages.length - 1];
             const paragraph = lastUserMessage.querySelector('p');
             paragraph.textContent = content;
+            setTimeout(scrollToBottom, 50);
         }
     }
 

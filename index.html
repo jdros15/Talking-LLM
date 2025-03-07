@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Voice Chat with LLM</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -14,26 +14,31 @@
             <div class="logo">
                 <i class="fas fa-robot"></i>
                 <h1>Voice LLM</h1>
+                <button id="toggle-sidebar" class="toggle-sidebar mobile-only">
+                    <i class="fas fa-chevron-up"></i>
+                </button>
             </div>
-            <div class="api-settings">
-                <h3>API Settings</h3>
-                <div class="input-group">
-                    <label for="gemini-api-key">Gemini API Key</label>
-                    <input type="password" id="gemini-api-key" placeholder="Enter Gemini API key">
+            <div class="settings-wrapper">
+                <div class="api-settings">
+                    <h3>API Settings</h3>
+                    <div class="input-group">
+                        <label for="gemini-api-key">Gemini API Key</label>
+                        <input type="password" id="gemini-api-key" placeholder="Enter Gemini API key">
+                    </div>
+                    <div class="input-group">
+                        <label for="elevenlabs-api-key">ElevenLabs API Key</label>
+                        <input type="password" id="elevenlabs-api-key" placeholder="Enter ElevenLabs API key">
+                    </div>
+                    <button id="save-api-keys" class="btn primary">Save Keys</button>
                 </div>
-                <div class="input-group">
-                    <label for="elevenlabs-api-key">ElevenLabs API Key</label>
-                    <input type="password" id="elevenlabs-api-key" placeholder="Enter ElevenLabs API key">
-                </div>
-                <button id="save-api-keys" class="btn primary">Save Keys</button>
-            </div>
-            <div class="voice-settings">
-                <h3>Voice Settings</h3>
-                <div class="input-group">
-                    <label for="voice-selector">TTS Voice</label>
-                    <select id="voice-selector">
-                        <option value="pNInz6obpgDQGcFmaJgB">Default Voice</option>
-                    </select>
+                <div class="voice-settings">
+                    <h3>Voice Settings</h3>
+                    <div class="input-group">
+                        <label for="voice-selector">TTS Voice</label>
+                        <select id="voice-selector">
+                            <option value="pNInz6obpgDQGcFmaJgB">Default Voice</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>

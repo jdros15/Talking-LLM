@@ -312,18 +312,190 @@ body {
 }
 
 /* Responsive styles */
+@media (max-width: 992px) {
+    .container {
+        max-width: 100%;
+    }
+    
+    .message {
+        max-width: 85%;
+    }
+}
+
 @media (max-width: 768px) {
     .container {
         flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+    }
+    
+    .mobile-only {
+        display: block;
     }
     
     .sidebar {
         width: 100%;
         border-right: none;
         border-bottom: 1px solid var(--border-color);
+        padding: 1rem;
+    }
+    
+    .logo {
+        justify-content: space-between;
+    }
+    
+    .settings-wrapper {
+        max-height: 1000px; /* A large value to accommodate all content */
+    }
+    
+    .settings-wrapper.collapsed {
+        max-height: 0;
+        opacity: 0;
+    }
+    
+    .toggle-sidebar.active i {
+        transform: rotate(180deg);
+    }
+    
+    .api-settings, .voice-settings {
+        gap: 0.75rem;
+    }
+    
+    .chat-container {
+        height: 70vh;
+    }
+    
+    .chat-messages {
+        padding: 1rem;
     }
     
     .message {
         max-width: 90%;
+        padding: 0.75rem;
     }
+    
+    .chat-input {
+        padding: 0.75rem 1rem;
+    }
+    
+    .record-btn {
+        width: 55px;
+        height: 55px;
+    }
+}
+
+@media (max-width: 576px) {
+    .logo h1 {
+        font-size: 1.25rem;
+    }
+    
+    .chat-header h2 {
+        font-size: 1.1rem;
+    }
+    
+    .chat-header {
+        padding: 0.75rem 1rem;
+    }
+    
+    .input-group input, .input-group select, .btn {
+        padding: 0.65rem;
+        font-size: 0.875rem;
+    }
+    
+    .chat-container {
+        height: 65vh;
+    }
+    
+    .visualizer-container {
+        height: 50px;
+    }
+    
+    .record-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 1rem;
+    }
+    
+    .message {
+        max-width: 95%;
+        padding: 0.6rem;
+        font-size: 0.95rem;
+    }
+    
+    .recording-status {
+        bottom: -18px;
+        padding: 0.2rem 0.6rem;
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 380px) {
+    .sidebar {
+        padding: 0.75rem;
+    }
+    
+    .api-settings h3, .voice-settings h3 {
+        font-size: 0.9rem;
+    }
+    
+    .input-group label {
+        font-size: 0.8rem;
+    }
+    
+    .input-group input, .input-group select, .btn {
+        padding: 0.6rem;
+        font-size: 0.8rem;
+    }
+    
+    .chat-container {
+        height: 60vh;
+    }
+    
+    .visualizer-container {
+        height: 45px;
+    }
+    
+    .record-btn {
+        width: 45px;
+        height: 45px;
+    }
+}
+
+/* Fix for mobile touch targets */
+@media (hover: none) and (pointer: coarse) {
+    .record-btn {
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .btn, .input-group input, .input-group select {
+        font-size: 16px; /* Prevents iOS zoom on focus */
+    }
+}
+
+.mobile-only {
+    display: none;
+}
+
+.toggle-sidebar {
+    background: transparent;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    margin-left: auto;
+    font-size: 1rem;
+    padding: 0.25rem;
+    transition: transform 0.3s ease;
+}
+
+.toggle-sidebar:focus {
+    outline: none;
+}
+
+.settings-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    overflow: hidden;
 } 
