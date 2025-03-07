@@ -43,6 +43,7 @@ body {
     max-width: 1600px;
     margin: 0 auto;
     overflow: hidden;
+    position: relative;
 }
 
 /* Sidebar Styles */
@@ -303,6 +304,7 @@ body {
     flex-direction: column;
     gap: 1rem;
     max-width: 100%;
+    overflow-x: hidden;
 }
 
 .message {
@@ -385,13 +387,14 @@ body {
     border-top: 1px solid var(--border-color);
     display: flex;
     align-items: center;
-    position: fixed;
+    position: absolute;
     bottom: 0;
-    width: calc(100% - 320px); /* Calculate width based on sidebar size */
+    right: 0;
     left: 320px;
     background-color: var(--chat-bg);
     z-index: 10;
     gap: 1rem;
+    width: auto;
 }
 
 .visualizer-container {
@@ -595,7 +598,9 @@ body {
     }
     
     .chat-input {
+        position: fixed;
         left: 0;
+        right: 0;
         width: 100%;
         bottom: env(safe-area-inset-bottom);
     }
@@ -895,23 +900,25 @@ input[type="range"]::-moz-range-thumb {
 /* Adjust for when sidebar is closed or absent in desktop */
 @media (min-width: 769px) {
     body.sidebar-closed .chat-input {
-        width: 100%;
         left: 0;
+        right: 0;
     }
     
     /* When screen gets bigger, ensure the input stays properly aligned */
     @media (min-width: 1600px) {
+        .container {
+            position: relative;
+        }
+        
         .chat-input {
-            width: calc(100% - 320px);
-            max-width: calc(1280px); /* 1600px - 320px sidebar */
-            margin: 0 auto;
-            left: 50%;
-            transform: translateX(calc(-50% + 160px)); /* Offset by half of the sidebar width */
+            max-width: none;
+            transform: none;
+            margin: 0;
         }
         
         body.sidebar-closed .chat-input {
-            transform: translateX(-50%);
-            max-width: 1600px;
+            transform: none;
+            max-width: none;
         }
     }
 } 

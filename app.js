@@ -381,7 +381,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize
     initVisualizer();
-    checkMobileState();
+    checkMobileState(); // Set initial state
+    
+    // Set initial sidebar state class regardless of mobile check
+    const sidebarVisible = window.innerWidth > 768; // Default visible on desktop
+    if (sidebarVisible) {
+        // On desktop, sidebar is visible by default
+        document.body.classList.remove('sidebar-closed');
+        settingsSidebar.classList.add('active');
+    } else {
+        // On mobile, sidebar is hidden by default
+        document.body.classList.add('sidebar-closed');
+        settingsSidebar.classList.remove('active');
+    }
+    
     window.addEventListener('resize', () => {
         initVisualizer();
         checkMobileState();
