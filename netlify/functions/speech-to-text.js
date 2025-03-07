@@ -79,6 +79,13 @@ exports.handler = async function(event, context) {
           ]
         }
       ],
+      systemInstruction: {
+        parts: [
+          {
+            text: "Transcribe the audio accurately. Never use asterisks (*) in your response."
+          }
+        ]
+      },
       generationConfig: {
         temperature: 0
       }
@@ -124,6 +131,13 @@ exports.handler = async function(event, context) {
             ]
           }
         ],
+        systemInstruction: {
+          parts: [
+            {
+              text: "Transcribe the audio accurately. Never use asterisks (*) in your response."
+            }
+          ]
+        },
         generationConfig: {
           temperature: 0
         }
