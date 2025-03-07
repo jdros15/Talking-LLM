@@ -168,8 +168,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!elevenlabsApiKey) return;
         
         try {
-            updateStatus('Loading voices...');
+            updateStatus('Loading voices...', 'generating', -1);
             const response = await fetch(`/.netlify/functions/elevenlabs-voices?api_key=${elevenlabsApiKey}`);
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `ElevenLabs API error (${response.status})`);
+            }
+            
             const data = await response.json();
             
             if (data.error) {
@@ -191,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     voiceSelector.appendChild(option);
                 });
                 
-                updateStatus('Voices loaded');
+                updateStatus(`${data.voices.length} voices loaded`);
             } else {
                 console.log('No voices found, adding fallback voices');
                 // Add some default ElevenLabs voices as fallback
@@ -212,30 +218,30 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error('Error loading voices:', error);
-            updateStatus('Error loading voices');
-            
-            // Add some default voices if we couldn't load them
-            const fallbackVoices = [
-                { voice_id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam' },
-                { voice_id: 'EXAVITQu4vr4xnSDxMaL', name: 'Bella' },
-                { voice_id: 'yoZ06aMxZJJ28mfd3POQ', name: 'Sam' }
-            ];
-            
-            fallbackVoices.forEach(voice => {
-                const option = document.createElement('option');
-                option.value = voice.voice_id;
-                option.textContent = voice.name;
-                voiceSelector.appendChild(option);
-            });
+            updateStatus(`ElevenLabs error: ${error.message}`, 'error', 5000);
         }
     }
 
     // Update status message
-    function updateStatus(message) {
-        statusElement.textContent = message;
-        setTimeout(() => {
-            statusElement.textContent = isRecording ? 'Recording...' : 'Ready';
-        }, 3000);
+    function updateStatus(message, type = '', duration = 3000) {
+        const statusText = statusElement.querySelector('.status-text');
+        statusText.textContent = message;
+        
+        // Clear previous status classes
+        statusElement.classList.remove('generating', 'speaking', 'error');
+        
+        // Add appropriate class based on type
+        if (type) {
+            statusElement.classList.add(type);
+        }
+        
+        // Only auto-reset the status if duration is positive and not a persistent state
+        if (duration > 0 && type !== 'generating' && type !== 'speaking') {
+            setTimeout(() => {
+                statusElement.classList.remove('generating', 'speaking', 'error');
+                statusText.textContent = isRecording ? 'Recording...' : 'Ready';
+            }, duration);
+        }
     }
 
     // Format recording time
@@ -328,7 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
             recordButton.classList.add('recording');
             recordButton.innerHTML = '<i class="fas fa-stop"></i>';
             recordingStatus.classList.add('active');
-            updateStatus('Recording...');
+            updateStatus('Recording...', '', -1);
             
             // Start visualizer
             drawVisualizer();
@@ -483,7 +489,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Speak response using ElevenLabs
     async function speakResponse(text) {
         try {
-            updateStatus('Speaking...');
+            // Show generating status (persistent until changed)
+            updateStatus('Generating audio...', 'generating', -1);
             
             const selectedVoice = voiceSelector.value;
             console.log(`Speaking response with voice: ${selectedVoice}`);
@@ -501,6 +508,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             
             console.log('TTS response status:', response.status);
+            
+            // If request failed with non-200 status
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `ElevenLabs API error (${response.status})`);
+            }
+            
             const data = await response.json();
             console.log('TTS response data:', data);
             
@@ -509,20 +523,39 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             if (!data.audio) {
-                throw new Error('No audio data returned');
+                throw new Error('No audio data returned from ElevenLabs');
             }
+            
+            // Change status to speaking
+            updateStatus('Speaking...', 'speaking', -1);
             
             // Play the audio
             const audio = new Audio(data.audio);
-            audio.play();
             
-            audio.onended = () => {
+            // Setup audio events
+            audio.addEventListener('play', () => {
+                console.log('Audio started playing');
+            });
+            
+            audio.addEventListener('error', (e) => {
+                console.error('Audio playback error:', e);
+                updateStatus('Audio playback error', 'error');
+            });
+            
+            audio.addEventListener('ended', () => {
+                console.log('Audio playback complete');
                 updateStatus('Ready');
-            };
+            });
+            
+            // Start playback
+            audio.play().catch(error => {
+                console.error('Audio play error:', error);
+                updateStatus('Audio playback failed', 'error');
+            });
             
         } catch (error) {
             console.error('Error speaking response:', error);
-            updateStatus('Error: ' + error.message);
+            updateStatus(`ElevenLabs error: ${error.message}`, 'error', 5000);
         }
     }
 

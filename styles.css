@@ -217,6 +217,58 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.status.generating {
+    color: #3b82f6; /* Blue for generating */
+}
+
+.status.speaking {
+    color: #10b981; /* Green for speaking */
+}
+
+.status.error {
+    color: #ef4444; /* Red for error */
+}
+
+.status-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #9ca3af; /* Default gray */
+    margin-right: 6px;
+}
+
+.status.generating .status-indicator {
+    background-color: #3b82f6;
+    animation: pulse 1.5s infinite;
+}
+
+.status.speaking .status-indicator {
+    background-color: #10b981;
+    animation: pulse 1s infinite;
+}
+
+.status.error .status-indicator {
+    background-color: #ef4444;
+}
+
+/* Add a new animation for the pulse effect */
+@keyframes pulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.7;
+    }
+    50% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.8);
+        opacity: 0.7;
+    }
 }
 
 .chat-messages {
@@ -357,18 +409,6 @@ body {
     }
     50% {
         transform: translateY(-4px);
-    }
-}
-
-@keyframes pulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-    }
-    70% {
-        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
     }
 }
 

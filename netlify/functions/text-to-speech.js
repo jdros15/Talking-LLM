@@ -36,15 +36,27 @@ exports.handler = async function(event, context) {
       }
     };
     
-    // Make the request to ElevenLabs
+    // Add timeout to prevent hanging requests
     const response = await axios.post(url, ttsData, {
       headers: headers,
-      responseType: 'arraybuffer' // Important for binary data
+      responseType: 'arraybuffer', // Important for binary data
+      timeout: 30000 // 30 second timeout
     });
     
     console.log(`ElevenLabs TTS API response status: ${response.status}`);
     
     if (response.status === 200) {
+      // Verify we actually received data
+      if (!response.data || response.data.length === 0) {
+        console.error('Received empty response from ElevenLabs');
+        return {
+          statusCode: 500,
+          body: JSON.stringify({
+            error: 'Received empty audio data from ElevenLabs'
+          })
+        };
+      }
+      
       // Convert the binary audio data to base64
       const audioContent = Buffer.from(response.data).toString('base64');
       console.log(`Successfully received audio data, size: ${response.data.length} bytes`);
@@ -72,19 +84,42 @@ exports.handler = async function(event, context) {
     
     // Get a more useful error message from the response if available
     let errorMessage = error.message;
-    if (error.response && error.response.data) {
-      try {
-        // Try to parse the error response
-        const errorData = JSON.parse(error.response.data.toString());
-        errorMessage = errorData.detail || errorData.message || errorMessage;
-      } catch (e) {
-        // If parsing fails, use the error status
-        errorMessage = `ElevenLabs API error: ${error.response.status}`;
+    let statusCode = 500;
+    
+    if (error.code === 'ECONNABORTED') {
+      errorMessage = 'ElevenLabs request timed out after 30 seconds';
+    } else if (error.response) {
+      statusCode = error.response.status;
+      
+      if (error.response.data) {
+        try {
+          // Try to parse the error response for JSON data
+          if (Buffer.isBuffer(error.response.data)) {
+            // Convert buffer to string
+            const errorText = error.response.data.toString('utf8');
+            try {
+              const errorData = JSON.parse(errorText);
+              errorMessage = errorData.detail || errorData.message || errorMessage;
+            } catch (e) {
+              // Not JSON, use text
+              errorMessage = errorText.substring(0, 100); // Limit length
+            }
+          } else {
+            // Handle case where response is already an object
+            const errorData = typeof error.response.data === 'object' 
+              ? error.response.data 
+              : JSON.parse(error.response.data);
+            errorMessage = errorData.detail || errorData.message || errorMessage;
+          }
+        } catch (e) {
+          // If parsing fails, use the error status
+          errorMessage = `ElevenLabs API error: ${error.response.status}`;
+        }
       }
     }
     
     return {
-      statusCode: 500,
+      statusCode: statusCode,
       body: JSON.stringify({ 
         error: errorMessage
       })
