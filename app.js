@@ -75,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             
             if (data.error) {
+                console.error('Error loading voices:', data.error);
                 throw new Error(data.error);
             }
             
@@ -84,17 +85,57 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             // Add voices
-            data.voices.forEach(voice => {
+            if (data.voices && data.voices.length > 0) {
+                data.voices.forEach(voice => {
+                    const option = document.createElement('option');
+                    option.value = voice.voice_id;
+                    option.textContent = voice.name;
+                    voiceSelector.appendChild(option);
+                });
+                
+                updateStatus('Voices loaded');
+            } else {
+                console.log('No voices found, adding fallback voices');
+                // Add some default ElevenLabs voices as fallback
+                const fallbackVoices = [
+                    { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam' },
+                    { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Antoni' },
+                    { id: 'jsCqWAovK2LkecY7zXl4', name: 'Arnold' },
+                    { id: '21m00Tcm4TlvDq8ikWAM', name: 'Bella' },
+                    { id: 'AZnzlk1XvdvUeBnXmlld', name: 'Domi' },
+                    { id: 'MF3mGyEYCl7XYWbV9V6O', name: 'Elli' }
+                ];
+                
+                fallbackVoices.forEach(voice => {
+                    const option = document.createElement('option');
+                    option.value = voice.id;
+                    option.textContent = voice.name;
+                    voiceSelector.appendChild(option);
+                });
+                
+                updateStatus('Using default voices');
+            }
+        } catch (error) {
+            console.error('Error loading voices:', error);
+            
+            // Add fallback voices
+            const fallbackVoices = [
+                { id: 'pNInz6obpgDQGcFmaJgB', name: 'Adam' },
+                { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Antoni' },
+                { id: 'jsCqWAovK2LkecY7zXl4', name: 'Arnold' },
+                { id: '21m00Tcm4TlvDq8ikWAM', name: 'Bella' },
+                { id: 'AZnzlk1XvdvUeBnXmlld', name: 'Domi' },
+                { id: 'MF3mGyEYCl7XYWbV9V6O', name: 'Elli' }
+            ];
+            
+            fallbackVoices.forEach(voice => {
                 const option = document.createElement('option');
-                option.value = voice.voice_id;
+                option.value = voice.id;
                 option.textContent = voice.name;
                 voiceSelector.appendChild(option);
             });
             
-            updateStatus('Voices loaded');
-        } catch (error) {
-            console.error('Error loading voices:', error);
-            updateStatus('Error loading voices');
+            updateStatus('Error loading voices, using defaults');
         }
     }
 
@@ -354,6 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateStatus('Speaking...');
             
             const selectedVoice = voiceSelector.value;
+            console.log(`Speaking response with voice: ${selectedVoice}`);
             
             const response = await fetch('/api/text-to-speech', {
                 method: 'POST',
@@ -367,17 +409,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
             });
             
+            console.log('TTS response status:', response.status);
             const data = await response.json();
+            console.log('TTS response data:', data);
             
             if (data.error) {
                 throw new Error(data.error);
             }
             
-            // Play audio
-            const audio = new Audio(data.audio);
-            audio.play();
+            if (!data.audio) {
+                throw new Error('No audio data received from the server');
+            }
             
-            updateStatus('Ready');
+            // Play audio
+            console.log('Creating audio element with data:', data.audio.substring(0, 100) + '...');
+            const audio = new Audio(data.audio);
+            
+            // Add event listeners to debug audio playback
+            audio.addEventListener('play', () => {
+                console.log('Audio playback started');
+            });
+            
+            audio.addEventListener('ended', () => {
+                console.log('Audio playback ended');
+                updateStatus('Ready');
+            });
+            
+            audio.addEventListener('error', (e) => {
+                console.error('Audio playback error:', e);
+                updateStatus('Error playing audio');
+            });
+            
+            // Force audio to play
+            audio.play()
+                .then(() => {
+                    console.log('Audio play promise resolved successfully');
+                })
+                .catch((error) => {
+                    console.error('Error playing audio:', error);
+                    updateStatus('Error: ' + error.message);
+                });
+            
         } catch (error) {
             console.error('Error speaking response:', error);
             updateStatus('Error: ' + error.message);
