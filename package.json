@@ -6,11 +6,11 @@
     "start": "netlify dev"
   },
   "dependencies": {
-    "@google-ai/generativelanguage": "^0.2.1",
+    "@google-ai/generativelanguage": "^2.9.1",
     "axios": "^1.6.2",
     "google-auth-library": "^9.2.0"
   },
   "devDependencies": {
-    "netlify-cli": "^17.15.5"
+    "netlify-cli": "^16.4.2"
   }
-} 
+}

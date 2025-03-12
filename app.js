@@ -741,9 +741,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Update user message
                     updateLastUserMessage(transcription);
                     
-                    // Add to chat history
-                    chatHistory.push({ role: 'user', content: transcription });
-                    
                     // Get response from LLM
                     await getLLMResponse(transcription);
                 } catch (error) {
@@ -762,6 +759,15 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             updateStatus('Getting response...');
             
+            // Format chat history for the API call
+            // The server expects messages in a specific format with role and content
+            const formattedHistory = chatHistory.map(msg => ({
+                role: msg.role,
+                content: msg.content
+            }));
+            
+            console.log('Sending request with chat history of length:', formattedHistory.length);
+            
             // Call Netlify Function for LLM response
             const response = await fetch('/.netlify/functions/llm-response', {
                 method: 'POST',
@@ -770,7 +776,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 body: JSON.stringify({
                     message: transcription,
-                    history: chatHistory,
+                    history: formattedHistory,
                     gemini_api_key: geminiApiKey
                 })
             });

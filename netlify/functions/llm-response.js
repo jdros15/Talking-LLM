@@ -22,28 +22,55 @@ exports.handler = async function(event, context) {
     // Updated system prompt with less emphasis
     const systemPrompt = "IMPORTANT: NEVER use asterisks (*) in your responses. Keep your answer under 240 characters. Be concise and direct. Use emphasis sparingly. Avoid excessive use of ALL CAPS. Only capitalize for acronyms or subtle emphasis of 1-2 key words when necessary. Use a natural, conversational tone.";
     
-    // Prepare the request for Gemini API with system prompt
-    const requestData = {
-      contents: [
-        {
+    // Prepare the API request contents with conversation history
+    let contents = [];
+    
+    // Add system prompt as the first message if there's no history
+    // otherwise, add it to the latest user message
+    if (!history || history.length === 0) {
+      // First message in conversation - include system prompt with user message
+      contents.push({
+        role: "user",
+        parts: [
+          {
+            text: systemPrompt + "\n\n" + message
+          }
+        ]
+      });
+    } else {
+      // Format history for Gemini API
+      // First add all previous messages
+      history.forEach(item => {
+        contents.push({
+          role: item.role,
           parts: [
             {
-              text: systemPrompt + "\n\n" + message
+              text: item.content || item.message // Support both formats
             }
           ]
-        }
-      ],
+        });
+      });
+      
+      // Then add the current user message
+      contents.push({
+        role: "user",
+        parts: [
+          {
+            text: message
+          }
+        ]
+      });
+    }
+    
+    // Prepare the request for Gemini API
+    const requestData = {
+      contents: contents,
       generationConfig: {
         maxOutputTokens: 60 // Approximately 240 characters
       }
     };
     
-    // If history is provided, we can format it appropriately for a chat
-    if (history && history.length > 0) {
-      // The actual implementation would depend on how your history is structured
-      // and how Gemini expects chat history
-      console.log("Chat history is available but not used in this implementation");
-    }
+    console.log("Sending to Gemini with conversation history. Total messages:", contents.length);
     
     // Call Gemini API
     let response;
@@ -71,18 +98,9 @@ exports.handler = async function(event, context) {
       
       // If we get an error response or empty response, try with different settings
       if (!responseText || responseText.includes("I'm sorry, I couldn't process your request")) {
-        // Try again with a different approach
+        // Try again with a different approach - slightly adjust the format
         const fallbackRequestData = {
-          contents: [
-            {
-              role: "user",
-              parts: [
-                {
-                  text: systemPrompt + "\n\n" + message
-                }
-              ]
-            }
-          ],
+          contents: contents,
           generationConfig: {
             temperature: 0.7,
             maxOutputTokens: 60 // Approximately 240 characters

@@ -60,6 +60,17 @@ An aesthetically pleasing web application that provides a voice-based chat inter
 4. Wait for the LLM to process your speech and respond
 5. The LLM's response will be displayed in the chat and spoken aloud
 
+## Conversation History with Gemini
+
+The application now maintains conversation history with Gemini's API. This allows Gemini to remember previous exchanges in the conversation, providing more contextually relevant responses.
+
+How it works:
+1. The frontend collects all messages in the conversation
+2. When sending a request to Gemini, the entire conversation history is formatted and included
+3. Gemini processes the full conversation context to generate a response
+
+This implementation helps Gemini understand the context of your conversation across multiple turns, similar to how other LLM-based chat interfaces work.
+
 ## Deployment to Netlify
 
 ### Deploy via Netlify Dashboard
