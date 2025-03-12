@@ -1010,4 +1010,24 @@ input[type="range"]::-moz-range-thumb {
             max-width: none;
         }
     }
+}
+
+/* Version info */
+.version-info {
+    text-align: center;
+    margin-top: auto;
+    padding: 15px 0;
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.version-info p {
+    margin: 0;
+}
+
+/* Make settings-wrapper flex with column direction to push version to bottom */
+.settings-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - 80px); /* Adjust based on logo height */
 } 

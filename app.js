@@ -1120,4 +1120,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
     }
+
+    // Dynamic version display
+    document.querySelector('.version-info p').textContent = 'Version 1.0.1';
 }); 
